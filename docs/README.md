@@ -12,6 +12,12 @@
 | [`governance/management-regulations-draft-v1.0-alpha.md`](governance/management-regulations-draft-v1.0-alpha.md) | 管理制度草案 |
 | [`governance/versioning-policy.md`](governance/versioning-policy.md) | **发布物 ≤ v1.0** 与文字稿例外说明 |
 
+## 规格（spec）
+
+| 文件 | 说明 |
+|------|------|
+| [`spec/linkrsp-core-algorithm-spec-v1.0.md`](spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（与可行性评估、白皮书交叉校验） |
+
 ## 报告与工程
 
 | 文件 | 说明 |
@@ -22,7 +28,4 @@
 
 ## 后续规划（建议目录）
 
-工程化后可按需增加：
-
-- `spec/` — LRS 算法、接口与规则 ID
-- `integrations/` — 策略/审计适配层与 OpenAPI 约定
+- `integrations/` — 策略/审计适配层与 OpenAPI 约定（待补）

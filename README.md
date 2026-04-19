@@ -19,6 +19,7 @@
 | [`docs/reports/rule-scenarios-author-assessment.md`](docs/reports/rule-scenarios-author-assessment.md) | 对报告 §6 规则场景的维护者评述 |
 | [`docs/engineering/architecture-v0.1.md`](docs/engineering/architecture-v0.1.md) | 工程架构理解、评估与 v0.1 设计草案 |
 | [`docs/governance/versioning-policy.md`](docs/governance/versioning-policy.md) | 发布物与文字稿的版本策略 |
+| [`docs/spec/linkrsp-core-algorithm-spec-v1.0.md`](docs/spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（含热力学经济模型调研，与可行性评估对齐） |
 
 ## 许可
 

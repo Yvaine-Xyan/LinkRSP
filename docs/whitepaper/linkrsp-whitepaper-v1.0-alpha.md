@@ -5,7 +5,7 @@
 **版本**：v1.0 Alpha（全量基线版本）  
 **Slogan**：Exchange time, link surplus. / 生存协议，织网自救。
 
-> 交叉引用：与 [`../reports/feasibility-assessment-v1.0-alpha.md`](../reports/feasibility-assessment-v1.0-alpha.md)（可行性评估）、[`../governance/management-regulations-draft-v1.0-alpha.md`](../governance/management-regulations-draft-v1.0-alpha.md)（管理制度草案）、[`../engineering/architecture-v0.1.md`](../engineering/architecture-v0.1.md)（工程架构草案）一并阅读。版本策略见 [`../governance/versioning-policy.md`](../governance/versioning-policy.md)。
+> 交叉引用：与 [`../reports/feasibility-assessment-v1.0-alpha.md`](../reports/feasibility-assessment-v1.0-alpha.md)（可行性评估）、[`../spec/linkrsp-core-algorithm-spec-v1.0.md`](../spec/linkrsp-core-algorithm-spec-v1.0.md)（核心算法规格说明书 v1.0）、[`../governance/management-regulations-draft-v1.0-alpha.md`](../governance/management-regulations-draft-v1.0-alpha.md)（管理制度草案）、[`../engineering/architecture-v0.1.md`](../engineering/architecture-v0.1.md)（工程架构草案）一并阅读。版本策略见 [`../governance/versioning-policy.md`](../governance/versioning-policy.md)。
 
 ---
 
