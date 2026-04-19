@@ -16,7 +16,8 @@
 
 | 文件 | 说明 |
 |------|------|
-| [`spec/linkrsp-core-algorithm-spec-v1.0.md`](spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（与可行性评估、白皮书交叉校验） |
+| [`spec/linkrsp-core-algorithm-spec-v1.0.md`](spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（算法与机制正文） |
+| [`spec/thermodynamic-economic-model-research-v1.0.md`](spec/thermodynamic-economic-model-research-v1.0.md) | 热力学经济模型深度调研 v1.0（叙事与隐喻；与上者拆分） |
 
 ## 报告与工程
 
@@ -25,6 +26,7 @@
 | [`reports/feasibility-assessment-v1.0-alpha.md`](reports/feasibility-assessment-v1.0-alpha.md) | 整体可行性评估（v1.0 Alpha） |
 | [`reports/rule-scenarios-author-assessment.md`](reports/rule-scenarios-author-assessment.md) | 对 §6 高频违规场景的维护者评述 |
 | [`engineering/architecture-v0.1.md`](engineering/architecture-v0.1.md) | 工程架构理解、评估与设计草案（v0.1） |
+| [`engineering/technology-strategy-v1.0.md`](engineering/technology-strategy-v1.0.md) | 技术栈与长期演进策略（v1.0，防技术债） |
 
 ## 后续规划（建议目录）
 

@@ -4,7 +4,7 @@
 **管理归属**：hdgp（厚德归朴）  
 **版本**：v1.0 Alpha
 
-> 交叉引用：白皮书 [`../whitepaper/linkrsp-whitepaper-v1.0-alpha.md`](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md)；核心算法规格 [`../spec/linkrsp-core-algorithm-spec-v1.0.md`](../spec/linkrsp-core-algorithm-spec-v1.0.md)；可行性评估（含高频违规场景）[`../reports/feasibility-assessment-v1.0-alpha.md`](../reports/feasibility-assessment-v1.0-alpha.md) §6；工程架构 [`../engineering/architecture-v0.1.md`](../engineering/architecture-v0.1.md)。版本策略 [`versioning-policy.md`](versioning-policy.md)。
+> 交叉引用：白皮书 [`../whitepaper/linkrsp-whitepaper-v1.0-alpha.md`](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md)；核心算法规格 [`../spec/linkrsp-core-algorithm-spec-v1.0.md`](../spec/linkrsp-core-algorithm-spec-v1.0.md)；热力学经济调研 [`../spec/thermodynamic-economic-model-research-v1.0.md`](../spec/thermodynamic-economic-model-research-v1.0.md)；可行性评估（含高频违规场景）[`../reports/feasibility-assessment-v1.0-alpha.md`](../reports/feasibility-assessment-v1.0-alpha.md) §6；工程架构 [`../engineering/architecture-v0.1.md`](../engineering/architecture-v0.1.md)；技术栈与长期策略 [`../engineering/technology-strategy-v1.0.md`](../engineering/technology-strategy-v1.0.md)。版本策略 [`versioning-policy.md`](versioning-policy.md)。
 
 ---
 

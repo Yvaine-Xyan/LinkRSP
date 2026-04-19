@@ -19,7 +19,9 @@
 | [`docs/reports/rule-scenarios-author-assessment.md`](docs/reports/rule-scenarios-author-assessment.md) | 对报告 §6 规则场景的维护者评述 |
 | [`docs/engineering/architecture-v0.1.md`](docs/engineering/architecture-v0.1.md) | 工程架构理解、评估与 v0.1 设计草案 |
 | [`docs/governance/versioning-policy.md`](docs/governance/versioning-policy.md) | 发布物与文字稿的版本策略 |
-| [`docs/spec/linkrsp-core-algorithm-spec-v1.0.md`](docs/spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（含热力学经济模型调研，与可行性评估对齐） |
+| [`docs/spec/linkrsp-core-algorithm-spec-v1.0.md`](docs/spec/linkrsp-core-algorithm-spec-v1.0.md) | 核心算法规格说明书 v1.0（算法与机制正文） |
+| [`docs/spec/thermodynamic-economic-model-research-v1.0.md`](docs/spec/thermodynamic-economic-model-research-v1.0.md) | 热力学经济模型深度调研 v1.0（叙事与隐喻；与算法 spec 拆分） |
+| [`docs/engineering/technology-strategy-v1.0.md`](docs/engineering/technology-strategy-v1.0.md) | 技术栈与长期演进策略 v1.0（防技术债） |
 
 ## 许可
 

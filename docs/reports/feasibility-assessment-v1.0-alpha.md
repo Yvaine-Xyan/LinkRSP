@@ -11,7 +11,7 @@ assessor: Claude (Anthropic)
 
 > **劳动力再平衡与生存韧性协议** · v1.0 Alpha · 评估版本：基于架构阶段全量文档 · 日期：2026 · 评估方：Claude (Anthropic)
 
-**相关文档**：[白皮书 v1.0 Alpha](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格说明书 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [规则场景评述（§6）](rule-scenarios-author-assessment.md) · [工程架构草案](../engineering/architecture-v0.1.md) · [版本策略](../governance/versioning-policy.md)
+**相关文档**：[白皮书 v1.0 Alpha](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格说明书 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型深度调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [规则场景评述（§6）](rule-scenarios-author-assessment.md) · [工程架构草案](../engineering/architecture-v0.1.md) · [技术栈与长期策略 v1.0](../engineering/technology-strategy-v1.0.md) · [版本策略](../governance/versioning-policy.md)
 
 ## 0. 执行摘要
 
