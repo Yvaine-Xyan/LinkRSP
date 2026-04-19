@@ -1,7 +1,7 @@
 ---
 title: LINKRSP · 整体可行性评估报告
 protocol: 劳动力再平衡与生存韧性协议
-version: v1.0Alpha
+version: v1.0 Alpha
 assessment_basis: 基于架构阶段全量文档
 date: 2026
 assessor: Claude (Anthropic)
@@ -9,7 +9,9 @@ assessor: Claude (Anthropic)
 
 # LINKRSP · 整体可行性评估报告
 
-> **劳动力再平衡与生存韧性协议** · v1.0Alpha · 评估版本：基于架构阶段全量文档 · 日期：2026 · 评估方：Claude (Anthropic)
+> **劳动力再平衡与生存韧性协议** · v1.0 Alpha · 评估版本：基于架构阶段全量文档 · 日期：2026 · 评估方：Claude (Anthropic)
+
+**相关文档**：[白皮书 v1.0 Alpha](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [规则场景评述（§6）](rule-scenarios-author-assessment.md) · [工程架构草案](../engineering/architecture-v0.1.md) · [版本策略](../governance/versioning-policy.md)
 
 ## 0. 执行摘要
 
@@ -45,13 +47,13 @@ assessor: Claude (Anthropic)
 
 ### 4.1 身份准入「1+1」约束 每个UID同一周期内仅允许关联1个S级社区和1个N级社区。这在制度层面强制防止 了人往高流量池子挤的⻢太效应，是整个治理设计中最聪明的单一规则。
 
-### 4.2 社区生命周期与升S机制 N级（孵化期）→IPO申请→伦理合规扫描→Judge全民评估→S级（运行期） 这个跃迁路径设计合理。关键在于IPO門槛的设定：成员基数和存证任务量的硬性門槛需 要在v1.1中给出具体数字，否则审核无法执行。建议参考值：最低5名活跃成员+30个 已完成V≥1存证任务。
+### 4.2 社区生命周期与升S机制 N级（孵化期）→IPO申请→伦理合规扫描→Judge全民评估→S级（运行期） 这个跃迁路径设计合理。关键在于IPO門槛的设定：成员基数和存证任务量的硬性門槛需 在后续 **spec 文稿**中给出具体数字，否则审核无法执行。建议参考值：最低5名活跃成员+30个 已完成V≥1存证任务。
 
 ### 4.3 承兑问题的最终答案 积分的承兑主体是基于HDGP协议规则约束下的全网S级社区互助网络（S/NMesh）。 承兑形式不是法币流动性，而是： · 在Judge 板块的治理投票权重（非线性加权） · 合法调用网络中其他人类物理劳动力的「优先排队权」和「声望」 · 在技术极寒期，这种优先权的有效性由HDGP协议层通过不可篡改的底层逻辑保证 这个答案在逻辑上自洽，在工程上可实现，在法律上规避了货币发行的合规⻛险。评估： 通过。
 
 ## 5. HDGP 集成架构评估
 
-### 5.1 当前HDGP状态 Engine v0.1 运行中，9个conformance test cases 通过，覆盖：施压式医疗决定、虚假 金融承诺、权威化合规命令、去人性化社区表述。RuleEngine基于versionedsigned rule bundles，非 LLM 推理，确定性高，可审计，可归因。 HDGP-Core 已以MIT 协议开源，APIendpoints 文档⻬全，集成接口就绪。
+### 5.1 当前HDGP状态 Engine v0.1 运行中，9个conformance test cases 通过，覆盖：施压式医疗决定、虚假 金融承诺、权威化合规命令、去人性化社区表述。RuleEngine基于versionedsigned rule bundles，非 LLM 推理，确定性高，可审计，可归因。 **HDGP-Core**（开源 Meta 基线，[HumanDignityGuardian/HDGP-Core](https://github.com/HumanDignityGuardian/HDGP-Core)）以 **Apache-2.0** 许可发布；可运行 Engine 与集成细节以实际采用的主线/发行版为准，本报告不绑定特定仓库。
 
 ### 5.2 Linkrsp 需要的 meta 层架构 HDGP目前是输出层守門人。Linkrsp需要的是输入层+输出层双向过滤。将HDGP作为 Linkrsp 的 meta 层意味着： · 社区规则提交时→输入侧拦截（语义合规扫描） · 任务描述发布时→输入侧拦截（物理定律校验+诱导性内容检测） · 积分结算产出时→输出侧审计（幻觉清洗+异常熔断） · 申诉和仲裁记录→追溯层（全程存证，不可篡改）
 
@@ -103,7 +105,7 @@ assessor: Claude (Anthropic)
 
 ### 9.2 最高优先级待办（按顺序）
 
-1. 完成 HDGP RuleEngine 的 Linkrsp 专属场景扩展（本报告第 6 节，30–50 条规则）
+1. 完成 HDGP RuleEngine 的 Linkrsp 专属场景扩展：本报告 **§6 已列 28 条**（R/S）；引擎侧目标可扩展至 **30–50 条规则**（含对单条的细化拆分，与 §5.5 一致）
 2. 确定升 S IPO 门槛的具体数字（最低成员数 + 最低存证任务数）
 3. 建立申诉机制（哪怕只是一个 email 地址 + 48 小时承诺）
 4. 手动完成第一个最小闭环（两个真实的人，一次完整的任务记录）
