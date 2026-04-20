@@ -2,7 +2,7 @@
 
 > 性质：工程视角的补充说明；不构成法律或合规承诺。  
 > 与《可行性评估报告》的关系：下文在**系统边界、数据与审计链、落地顺序**上展开，并标注报告中的工程缺口。  
-> **相关文档**：[可行性评估](../reports/feasibility-assessment-v1.0-alpha.md) · [白皮书](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [技术栈与长期策略 v1.0](technology-strategy-v1.0.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [§6 规则评述](../reports/rule-scenarios-author-assessment.md) · [版本策略](../governance/versioning-policy.md)（发布物 semver 在未达上线标准前 ≤ v1.0）。
+> **相关文档**：[可行性评估](../reports/feasibility-assessment-v1.0-alpha.md) · [白皮书](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [技术栈与长期策略 v1.0](technology-strategy-v1.0.md) · [威胁模型范围 v1.0](../security/threat-model-scope-v1.0.md) · [申诉与公开记录](../governance/appeals-and-public-record.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [§6 规则评述](../reports/rule-scenarios-author-assessment.md) · [版本策略](../governance/versioning-policy.md)（发布物 semver 在未达上线标准前 ≤ v1.0）。
 
 ---
 

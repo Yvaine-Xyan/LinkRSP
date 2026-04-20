@@ -11,7 +11,7 @@ assessor: Claude (Anthropic)
 
 > **劳动力再平衡与生存韧性协议** · v1.0 Alpha · 评估版本：基于架构阶段全量文档 · 日期：2026 · 评估方：Claude (Anthropic)
 
-**相关文档**：[白皮书 v1.0 Alpha](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格说明书 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型深度调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [规则场景评述（§6）](rule-scenarios-author-assessment.md) · [工程架构草案](../engineering/architecture-v0.1.md) · [技术栈与长期策略 v1.0](../engineering/technology-strategy-v1.0.md) · [版本策略](../governance/versioning-policy.md)
+**相关文档**：[白皮书 v1.0 Alpha](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格说明书 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型深度调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [申诉与公开记录](../governance/appeals-and-public-record.md) · [威胁模型范围 v1.0](../security/threat-model-scope-v1.0.md) · [规则场景评述（§6）](rule-scenarios-author-assessment.md) · [工程架构草案](../engineering/architecture-v0.1.md) · [技术栈与长期策略 v1.0](../engineering/technology-strategy-v1.0.md) · [版本策略](../governance/versioning-policy.md) · [SECURITY](../../SECURITY.md)
 
 ## 0. 执行摘要
 
@@ -65,6 +65,8 @@ assessor: Claude (Anthropic)
 
 ## 6. Linkrsp 高频违规场景定义（RuleEngine扩展基础） 以下场景分类为RuleEngine可直接实现的硬性规则（R类）和需LLM辅助的语义规则 （S类）。
 
+> **条数口径**：对外验收与 Rule Engine 编排按 **32 条执行轨**计 — **R 类 12 条** + **S 类 16 条** + **§6.6 混合类 4 条**（与 R/S 标识符组合对应）。**唯一规则 ID** 仍为 **R-001—R-012** 与 **S-001—S-016** 共 **28** 个。
+
 ### 6.1 物理悖论类（R类，RuleEngine直接拦截） R-001：同一UID 在重叠时间段提交两个不同地理位置的V≥1任务 R-002：两次V=2BLE握手之间的位移速度超过合理交通速度（建议阈值：200km/h） R-003：单次任务T_phy超过24小时（物理不可持续） R-004：任务开始时间戳晚于结束时间戳 R-005：同一UID 在24小时内提交超过16小时物理工时（超过人类清醒极限）
 
 ### 6.2 积分套利类（R类，RuleEngine直接拦截） R-006：d²C/dt² 超过统计阈值（积分加速度异常，预示脚本攻击或协同刷单） R-007：社区ΣW_risk 理论峰值超过3.0，阻断升SIPO流程 R-008：同一社区平均D值持续超过全网中位数1.5倍超过30天 R-009：UID 连续 10次以上使用V=0自主声明，触发V-Decay降权警告 R-010：UID 在创世期结束后7天内积分产出超过全网同期用户99th百分位
@@ -105,7 +107,7 @@ assessor: Claude (Anthropic)
 
 ### 9.2 最高优先级待办（按顺序）
 
-1. 完成 HDGP RuleEngine 的 Linkrsp 专属场景扩展：本报告 **§6 已列 28 条**（R/S）；引擎侧目标可扩展至 **30–50 条规则**（含对单条的细化拆分，与 §5.5 一致）
+1. 完成 HDGP RuleEngine 的 Linkrsp 专属场景扩展：本报告 **§6 共 32 条执行轨**（12 R + 16 S + 4 混合类；**28** 个唯一 ID）；引擎侧目标可扩展至 **30–50 条规则**（含对单条的细化拆分，与 §5.5 一致）
 2. 确定升 S IPO 门槛的具体数字（最低成员数 + 最低存证任务数）
 3. 建立申诉机制（哪怕只是一个 email 地址 + 48 小时承诺）
 4. 手动完成第一个最小闭环（两个真实的人，一次完整的任务记录）
