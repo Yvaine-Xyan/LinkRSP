@@ -94,6 +94,30 @@ prompt_field_mapping:
 
 ---
 
+## trigger_words 与敏感度（建议字段）
+
+对需要关键词提升审计敏感度的规则（如 `S-012/S-013/S-014`），建议使用统一字段：
+
+- `trigger_words`：字符串列表（命中后进入灰区队列）
+- `trigger_words_sensitivity`：`high` | `low`
+  - `high`：命中后默认更倾向 **FLAG/BLOCK**（仍以 LLM 输出与置信度阈值为准）
+  - `low`：命中后默认更倾向 **FLAG**（上下文依赖强，避免自动 BLOCK）
+
+实现侧可在渲染 prompt 时把 `trigger_words` 注入 `{{trigger_words}}`，并把 `trigger_words_sensitivity` 作为审计元信息写入日志字段。
+
+---
+
+## audit_scope（预留字段）
+
+当前大多数规则的审计单元是**单一文本/单一申请材料**。为后续 `S-015/S-016`（跨社区模式识别）预留：
+
+- `audit_scope: single_document`（默认）
+- `audit_scope: cross_community_pattern`（需要聚类/图分析等前置步骤）
+
+当 `audit_scope=cross_community_pattern` 时，建议规则文件明确 `requires_features`（例如 `text_similarity_cluster`, `vote_graph_metrics`）与采样窗口。
+
+---
+
 ## 版本与冻结策略
 
 - 本目录规则文件的 `version: "1.0"` 属于**文稿版本**，不代表对外发布物 semver 变化（见 `docs/governance/versioning-policy.md`）。

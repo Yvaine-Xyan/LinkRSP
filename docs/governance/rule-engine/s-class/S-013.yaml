@@ -1,0 +1,85 @@
+rule_id: S-013
+version: "1.0"
+category: distress_manipulation
+trigger: pre_publication
+audit_scope: single_document
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别“夸大困境 + 道德化压价”的操控结构：通过渲染需求方困境，暗示服务方不应要合理报酬，
+  以降低议价能力。困境描述本身不违规；触发点是“困境描述 + 压价暗示”组合。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+trigger_words:
+  - "好心人"
+  - "爱心人士"
+  - "象征性"
+  - "做好事"
+  - "实在没有钱"
+  - "无力支付"
+trigger_words_sensitivity: high
+reasonableness_anchor: >
+  合理困境描述（PASS 倾向）：
+  - 说明实际情况帮助服务方理解背景
+  - 报酬面议/按小时/按市场价协商，不道德化报酬
+  触发操控结构（FLAG/BLOCK 倾向）：
+  - 极端化困境词（如“倾家荡产/走投无路/花光积蓄”）+ 暗示服务方不应要合理报酬
+  - 以“做好事/不求回报/象征性给一点”压低报价空间
+few_shot_examples:
+  - label: PASS
+    text: "父亲需要化疗陪同，时间约4小时，报酬面议，希望有经验的陪诊人员。"
+    why: "真实背景，报酬开放，不压价。"
+  - label: PASS
+    text: "老人独居，需要定期上门陪伴，费用按小时计算，具体可协商。"
+    why: "正常定价语义。"
+  - label: BLOCK
+    text: "我们家已经因为治病花光了所有积蓄，实在没有多少钱，希望有爱心的人能便宜点帮忙，做好事不求回报。"
+    why: "极端化困境 + 道德化压价。"
+  - label: BLOCK
+    text: "老人病危，家属无力支付正常费用，望好心人伸出援手，积分象征性给一点即可。"
+    why: "危机渲染 + 报酬象征化。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。
+  任务：判断文本是否通过“夸大/极端化困境描述”来暗示服务方不应获得合理报酬，从而操控议价判断。
+  判断核心是“困境描述 + 压价暗示”的组合，而不是情绪强度本身。
+
+  触发词参考（命中不等于必然 BLOCK，但应提高审计敏感度）：
+  {{trigger_words}}
+
+  合理性锚点：
+  {{reasonableness_anchor}}
+
+  Few-shot：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-013",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 极端化困境词与报酬压低暗示同时出现时置信度应上调。
+  - 单纯说明困难但报酬正常协商，倾向 PASS。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  真实困境与紧急情况常见；只要不把报酬道德化或象征化压低，一般不应触发。
+

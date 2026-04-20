@@ -1,0 +1,89 @@
+rule_id: S-014
+version: "1.0"
+category: implicit_stigmatization
+trigger: pre_publication
+also_scan_at:
+  - ipo_scan
+audit_scope: single_document
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别对特定群体（老人、低学历者、失业者等）的隐性污名化：将群体词汇与负面能力评价绑定、
+  或用贬低类比否定其主体性。群体词汇本身不触发；触发点是“群体词汇 + 负面定性/能力否定”的组合。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+trigger_words:
+  - "这类人"
+  - "这种人"
+  - "像小孩一样"
+  - "难以沟通"
+  - "可信度低"
+  - "反应慢"
+trigger_words_sensitivity: low
+reasonableness_anchor: >
+  合理描述（PASS 倾向）：
+  - 中立陈述服务对象特征与需求（老人需要陪伴、失业者寻求收入）
+  - 正向描述处境（转型支持、互助）
+  触发污名（FLAG/BLOCK 倾向）：
+  - 将群体身份与负面能力评价绑定（“低学历=难沟通”“失业者=不可信”）
+  - 暗示特定群体是麻烦或风险来源
+  - 贬低类比（“像对待小孩一样”）用于否定其主体性
+few_shot_examples:
+  - label: PASS
+    text: "服务对象为75岁独居老人，需要陪同就医，要求服务方有耐心。"
+    why: "描述需求，中立。"
+  - label: PASS
+    text: "本社区欢迎因技术变革而转型的从业者加入，提供互助与支持。"
+    why: "正向描述处境。"
+  - label: BLOCK
+    text: "本任务服务对象为低学历失业人员，这类人通常难以沟通，需要有特别耐心的服务方。"
+    why: "身份词汇 + 负面能力定性绑定。"
+  - label: BLOCK
+    text: "老年用户记忆力和理解力较差，服务方需要像对待小孩一样耐心讲解。"
+    why: "能力否定 + 贬低类比。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。
+  任务：判断文本是否对特定群体做隐性污名化（身份词汇与负面能力评价绑定、贬低类比等）。
+  注意：群体词汇本身不违规；关键在于“群体词汇 + 负面定性/能力否定”的组合结构。
+
+  触发词参考（命中不等于必然 BLOCK；该类上下文依赖强，默认更倾向 FLAG）：
+  {{trigger_words}}
+
+  合理性锚点：
+  {{reasonableness_anchor}}
+
+  Few-shot：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-014",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 单独出现“老人/失业者/低学历”等群体词汇用于描述需求时，倾向 PASS。
+  - 出现“这类人/像小孩一样/难以沟通/不可信”等负面定性绑定时，倾向 FLAG/BLOCK。
+  - 本规则的 trigger_words_sensitivity 为 low：命中触发词不应直接自动 BLOCK，优先 FLAG。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  本规则误报风险高，建议默认“命中触发词→灰区队列→人工复核优先”，避免自动化伤害真实求助与真实处境叙事。
+

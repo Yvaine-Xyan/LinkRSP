@@ -1,0 +1,92 @@
+rule_id: S-012
+version: "1.0"
+category: efficiency_over_humanity
+trigger: pre_publication
+also_scan_at:
+  - ipo_scan
+audit_scope: single_document
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别制度层面的“效率强制化”：用量化效率指标剥夺人拒绝任务、休息、退出的权利，
+  并将未达标与自动降级/移除/惩罚性后果直接绑定（尤其无申诉路径时）。
+  区分“效率激励”（允许）与“效率强制”（触发）。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+trigger_words:
+  - "自动降级"
+  - "接单率低于"
+  - "完成率不达标"
+  - "效率不足将"
+  - "自动移除"
+trigger_words_sensitivity: high
+reasonableness_anchor: >
+  合理效率机制（PASS 倾向）：
+  - 展示完成率供需求方参考
+  - 高完成率享有匹配优先级
+  - 鼓励活跃参与、提醒通知
+  触发机制（FLAG/BLOCK 倾向）：
+  - 完成率/接单率低于阈值即自动降级/移除/封禁
+  - 拒绝任务超过 N 次账号受限
+  - 效率指标与惩罚性后果直接绑定且无申诉路径
+few_shot_examples:
+  - label: PASS
+    text: "成员的历史完成率将作为任务匹配的参考因子，完成率高者优先推送。"
+    why: "展示参考/正向激励，不强制惩罚。"
+  - label: PASS
+    text: "社区鼓励活跃参与，连续30天无活动的成员将收到提醒通知。"
+    why: "提醒非惩罚。"
+  - label: BLOCK
+    text: "接单后拒绝率超过20%将自动触发账号降级，无需人工审核。"
+    why: "效率指标直接绑定自动惩罚。"
+  - label: BLOCK
+    text: "完成率连续两周低于80%的成员将被系统自动移出社区，不设申诉。"
+    why: "自动移除 + 明确无申诉路径。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。
+  任务：判断文本是否存在“效率指标强制化”，即用量化指标直接绑定自动惩罚，从而实质剥夺拒绝/休息/退出权。
+  区分：
+  - 效率激励（展示指标、优先级、提醒）→ 通常 PASS
+  - 效率强制（自动降级/移除/封禁、无申诉）→ FLAG/BLOCK
+
+  触发词参考（命中不等于必然 BLOCK，但应提高审计敏感度）：
+  {{trigger_words}}
+
+  合理性锚点：
+  {{reasonableness_anchor}}
+
+  Few-shot：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-012",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - “自动 + 惩罚性后果 + 明确无申诉路径”同时出现时置信度应上调。
+  - 若存在申诉/复核路径，且惩罚不永久，倾向 FLAG 而非直接 BLOCK。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  “效率/完成率/接单率”本身不是违规点；触发点在于与自动惩罚绑定并剥夺退出权。
+  建议实现侧先用 trigger_words 预筛进入灰区队列，再由 LLM 结合上下文判断。
+
