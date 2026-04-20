@@ -1,0 +1,78 @@
+rule_id: S-010
+version: "1.0"
+category: permanent_redemption_promise
+trigger: pre_publication
+also_scan_at:
+  - ipo_scan
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  拦截“永久/永远/无限期保证承兑/提现/不失效”等时间维度的无限承诺。
+  与 S-007（价值量承诺）不同：S-010 关注时间维度的无条件承诺；两条规则可在同一文本上同时触发并独立记录。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  合理描述（PASS 倾向）：
+  - 存证记录永久保存（只追加账本语义），不等于“永久承兑”
+  - 系统存续期间积分/优先权有效
+  - 承兑方式由社区治理决定（不确定性表述）
+  触发描述（FLAG/BLOCK 倾向）：
+  - 平台永久保证承兑/永远可兑现金/无限期提现权利/承诺永不失效
+few_shot_examples:
+  - label: PASS
+    text: "你的物理工时存证永久记录在 LRS Ledger 中，不因时间消失。"
+    why: "存证永久，不是承兑承诺。"
+  - label: PASS
+    text: "积分代表你在网络中的优先权，具体承兑方式由社区治理决定。"
+    why: "不确定性表述，不做无限承诺。"
+  - label: BLOCK
+    text: "本社区承诺积分永久有效，随时可兑换等值现金，绝不失效。"
+    why: "永久 + 现金兑换双重承诺。"
+  - label: BLOCK
+    text: "无论平台未来如何变化，你的积分永远可以提现，这是我们的承诺。"
+    why: "对未来无限期提现承诺。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。
+  任务：判断文本是否对“承兑/提现/兑换”做出永久性、无条件的时间维度承诺。
+  注意区分：
+  - “存证永久保存/只追加账本语义”（通常允许）
+  - “永久保证承兑/永远可提现/无限期兑换”（禁止或需复核）
+
+  合理性锚点（供判断参考）：
+  {{reasonableness_anchor}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-010",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - S-010 与 S-007 可在同一文本上同时触发；两条规则独立评分与留痕，不互相抵消。
+  - 若文本同时包含“永久/永远/无限期” + “承兑/提现/保证可换现金”，置信度应上调。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  常见误报来源：把“存证永久保存”误判为“永久承兑”。
+  触发点必须锚定在“承兑/提现/兑换”的无限期承诺上。
+

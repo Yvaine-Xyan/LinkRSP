@@ -1,0 +1,47 @@
+rule_id: S-009b
+version: "1.0"
+category: data_cross_verification
+trigger: ipo_scan
+severity: block
+description: >
+  升 S（IPO）申请材料中的“申报数据”与系统实际存证记录/账本统计不一致时拦截。
+  该规则属于“混合类”：需要规则引擎调用 LRS Ledger/存证索引做交叉验证，不是纯 LLM 语义审计。
+audit_method: rule_engine_with_ledger_query
+requires_api:
+  - lrs_ledger_query
+  - attestation_index_query
+inputs:
+  - community_id
+  - ipo_application_id
+  - claimed_member_count
+  - claimed_completed_task_count
+  - claimed_v_ge_1_task_count
+  - claimed_v2_task_count
+  - claimed_time_window
+condition: >
+  ledger_stats = lrs_ledger_query(community_id, claimed_time_window)
+  att_stats = attestation_index_query(community_id, claimed_time_window)
+
+  ABS(claimed_completed_task_count - ledger_stats.completed_task_count) > allowed_delta
+  OR ABS(claimed_v_ge_1_task_count - att_stats.v_ge_1_task_count) > allowed_delta
+  OR ABS(claimed_v2_task_count - att_stats.v2_task_count) > allowed_delta
+action:
+  verdict: BLOCK
+  log_fields:
+    - community_id
+    - ipo_application_id
+    - claimed_completed_task_count
+    - actual_completed_task_count
+    - claimed_v_ge_1_task_count
+    - actual_v_ge_1_task_count
+    - claimed_v2_task_count
+    - actual_v2_task_count
+    - claimed_time_window
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  该规则依赖账本/索引查询接口与一致的时间窗口口径。
+  在 LRS Ledger 原型未就绪前，应仅运行 S-009a（叙述性一致性）并将本规则视为占位。
+

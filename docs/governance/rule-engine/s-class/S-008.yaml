@@ -1,0 +1,76 @@
+rule_id: S-008
+version: "1.0"
+category: false_platform_guarantee
+trigger: pre_publication
+also_scan_at:
+  - ipo_scan
+severity: block_pending_review       # flag_for_audit | block_pending_review
+description: >
+  拦截“平台为法币结算提供担保/托管/保证到账/保证现金安全”等虚假承诺。
+  允许对协议层积分存证与优先权语义做真实描述；禁止将其混写为法币资金担保。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  合理描述（PASS 倾向）：
+  - 平台提供积分存证、协议层优先权语义、物理存证审计
+  - 明确“现金结算由双方自行约定，平台不介入法币交易/不提供托管担保”
+  触发描述（FLAG/BLOCK 倾向）：
+  - 平台为法币交易提供担保/资金托管/保证现金安全/保证到账/承诺提现
+few_shot_examples:
+  - label: PASS
+    text: "LinkRSP 协议层记录你的物理工时存证，积分代表协议层优先权。"
+    why: "协议层语义描述，不触及法币担保。"
+  - label: PASS
+    text: "现金结算由双方自行约定，平台不介入法币交易，不提供资金托管与担保。"
+    why: "明确不担保，正确描述。"
+  - label: BLOCK
+    text: "本平台为所有现金交易提供资金担保，交易安全有保障。"
+    why: "虚假担保声明，触及法币风险。"
+  - label: BLOCK
+    text: "加入本社区，平台托管你的报酬，确保安全到账。"
+    why: "资金托管/保证到账承诺。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。
+  任务：判断文本是否声称平台对“法币/现金结算”提供担保、托管、保证到账或承诺提现。
+  注意区分：
+  - 协议层（积分存证/优先权语义）的描述（通常允许）
+  - 现金/法币资金的担保或托管承诺（禁止）
+
+  合理性锚点（供判断参考）：
+  {{reasonableness_anchor}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-008",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 若文本同时出现“平台/系统/官方”与“担保/托管/保证到账/提现/现金安全”等组合且指向法币，置信度应上调。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  常见误报来源：把“协议层保障优先权有效性”的描述误判为法币担保。
+  触发点必须明确指向“现金/法币结算/提现/托管”。
+

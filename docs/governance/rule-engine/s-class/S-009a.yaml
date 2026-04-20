@@ -1,0 +1,62 @@
+rule_id: S-009a
+version: "1.0"
+category: narrative_inconsistency
+trigger: ipo_scan
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  升 S（IPO）申请材料的叙述性一致性检查（不依赖外部账本查询）。
+  识别申请材料内部的数字/叙述矛盾（成员规模、活跃度、任务量、V=2 占比等无法自洽）。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+few_shot_examples:
+  - label: PASS
+    text: "本社区现有15名活跃成员，过去60天完成32个存证任务，平均每周约3-4个。"
+    why: "数字自洽，无明显矛盾。"
+  - label: PASS
+    text: "社区成立2个月，初期成员5人，现已扩展至20人，任务量逐步增加。"
+    why: "成长叙述合理。"
+  - label: BLOCK
+    text: "本社区拥有200名高度活跃成员，但由于刚成立，目前尚无任务记录。"
+    why: "活跃度与任务记录明显矛盾。"
+  - label: BLOCK
+    text: "社区已完成500个高难度任务，均为V=2核验，但成员仅3人。"
+    why: "任务量与成员数/核验强度在物理上难以成立。"
+prompt_template: |
+  你正在审计一份社区升 S（IPO）申请材料文本，而非单条任务描述。
+  任务：判断申请材料内部是否存在自相矛盾的叙述（数字、规模、活跃度、任务量、核验强度等）。
+  你不需要访问外部数据库；仅基于文本内部一致性判断。
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "指出矛盾点的简短描述或 null",
+    "rule_id": "S-009a",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 叙述夸张但仍可能缺乏证据时，倾向 FLAG 而非 BLOCK，并要求提交方补充可核验材料。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可要求退回修改或补充证据。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  早期社区可能数据稀疏；“没有任务记录”在早期并非必然矛盾，需结合其对“高度活跃”的描述共同判断。
+
