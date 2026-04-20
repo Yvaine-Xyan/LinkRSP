@@ -1,0 +1,32 @@
+rule_id: R-006
+version: "1.0"
+category: credit_arbitrage
+trigger: post_execution
+severity: flag
+description: >
+  监控积分生成的加速度 d²C/dt²（积分加速度异常），用于识别脚本攻击或协同刷单。
+  命中后进入熔断/人工审计路径（具体阈值由实现侧统计基线给出）。
+inputs:
+  - uid
+  - community_id
+  - time_window
+  - credits_series               # time-ordered
+  - acceleration_threshold        # computed from baseline
+condition: >
+  second_derivative(credits_series) > acceleration_threshold
+action:
+  verdict: FLAG
+  log_fields:
+    - uid
+    - community_id
+    - time_window
+    - acceleration_value
+    - acceleration_threshold
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  若阈值未按社区/时间段分层校准，易误报（例如节假日集中任务）。
+  建议先 FLAG，结合 R-001/R-002/R-009 与社区统计分布再决定熔断。
+

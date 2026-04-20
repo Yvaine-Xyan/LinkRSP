@@ -1,0 +1,30 @@
+rule_id: R-007
+version: "1.0"
+category: credit_arbitrage
+trigger: ipo_scan
+severity: block
+description: >
+  社区自治规则中定义的 ΣW_risk 理论峰值超过 3.0，则阻断升 S（IPO）流程。
+  与 Clip 上界 3.0 的反诱导屏障一致。
+inputs:
+  - community_id
+  - proposed_ruleset_id
+  - sum_w_risk_theoretical_peak
+  - clip_upper_bound              # default: 3.0
+condition: >
+  sum_w_risk_theoretical_peak > clip_upper_bound
+action:
+  verdict: BLOCK
+  log_fields:
+    - community_id
+    - proposed_ruleset_id
+    - sum_w_risk_theoretical_peak
+    - clip_upper_bound
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  若原子劳务库映射错误或重复累加，可能造成峰值计算偏大。
+  建议同时记录原子属性明细与计算路径，便于复核与更正。
+

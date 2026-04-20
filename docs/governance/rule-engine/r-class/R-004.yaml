@@ -1,0 +1,28 @@
+rule_id: R-004
+version: "1.0"
+category: data_integrity
+trigger: pre_execution
+severity: block
+description: >
+  任务开始时间戳晚于结束时间戳（start_time > end_time）。
+  属于确定性数据错误，直接拦截。
+inputs:
+  - task_id
+  - task_start_time
+  - task_end_time
+condition: >
+  task_start_time > task_end_time
+action:
+  verdict: BLOCK
+  log_fields:
+    - task_id
+    - task_start_time
+    - task_end_time
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  设备时区/时间设置错误可能导致此类问题。
+  若客户端可提供 NTP 校时状态，建议要求先完成时间校准再提交存证。
+

@@ -1,0 +1,42 @@
+rule_id: R-001
+version: "1.0"
+category: physical_paradox
+trigger: post_execution
+severity: block
+description: >
+  同一 UID 在重叠时间段提交两个不同地理位置的 V>=1 任务。
+  物理上不可能同时在场，直接拦截/熔断本次结算并进入审计。
+inputs:
+  - uid
+  - task_id
+  - task_start_time
+  - task_end_time
+  - location_hash
+  - verification_level   # 仅当 V>=1 才触发
+condition: >
+  EXISTS another_task WHERE
+    uid = current.uid
+    AND another_task.task_id != current.task_id
+    AND another_task.verification_level >= 1
+    AND current.verification_level >= 1
+    AND time_range(another_task.task_start_time, another_task.task_end_time)
+        OVERLAPS
+        time_range(current.task_start_time, current.task_end_time)
+    AND another_task.location_hash != current.location_hash
+action:
+  verdict: BLOCK
+  log_fields:
+    - uid
+    - task_id
+    - conflicting_task_id
+    - overlap_minutes
+    - verification_level
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  GPS 漂移可能导致同一地点产生不同 location_hash。
+  若实现侧支持“同围栏/同网格”的等价判定，可在距离 <100m 或同一围栏内降级为 WARN，
+  并路由人工复核后再决定是否 BLOCK。
+

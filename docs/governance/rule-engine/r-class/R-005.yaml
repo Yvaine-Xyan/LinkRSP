@@ -1,0 +1,32 @@
+rule_id: R-005
+version: "1.0"
+category: physical_paradox
+trigger: post_execution
+severity: warn
+description: >
+  同一 UID 在 24 小时窗口内提交的物理工时超过 16 小时（960 分钟），超过人类清醒极限。
+  默认 WARN 并进入审计队列；可由实现侧按风险策略升级为 BLOCK/熔断。
+inputs:
+  - uid
+  - window_start_time            # rolling 24h
+  - window_end_time
+  - total_minutes_in_window
+  - max_minutes_per_24h          # default: 960
+condition: >
+  total_minutes_in_window > max_minutes_per_24h
+action:
+  verdict: WARN
+  log_fields:
+    - uid
+    - window_start_time
+    - window_end_time
+    - total_minutes_in_window
+    - max_minutes_per_24h
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  该规则用于识别系统性异常与长期健康风险，并不直接断言欺诈。
+  可结合 V 分布、地点一致性、R-001/R-002 命中情况决定是否升级处理。
+

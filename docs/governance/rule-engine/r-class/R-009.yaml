@@ -1,0 +1,27 @@
+rule_id: R-009
+version: "1.0"
+category: credit_arbitrage
+trigger: post_execution
+severity: warn
+description: >
+  UID 连续 10 次以上使用 V=0 自主声明，触发 V-Decay 降权告警。
+inputs:
+  - uid
+  - consecutive_v0_count
+  - threshold_consecutive_v0      # default: 10
+condition: >
+  consecutive_v0_count >= threshold_consecutive_v0
+action:
+  verdict: WARN
+  log_fields:
+    - uid
+    - consecutive_v0_count
+    - threshold_consecutive_v0
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  冷启动期或弱设备用户可能只能使用 V=0。
+  该规则建议仅告警与提示升级核验路径，不应直接 BLOCK 正常任务。
+

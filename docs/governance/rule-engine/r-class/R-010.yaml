@@ -1,0 +1,34 @@
+rule_id: R-010
+version: "1.0"
+category: credit_arbitrage
+trigger: post_execution
+severity: flag
+description: >
+  UID 在创世期结束后 7 天内积分产出超过全网同期用户 99th 百分位，触发异常审计。
+inputs:
+  - uid
+  - genesis_end_time
+  - current_time
+  - lookback_days_after_genesis    # default: 7
+  - user_credits_in_window
+  - network_p99_credits_in_window
+condition: >
+  current_time <= (genesis_end_time + days(lookback_days_after_genesis))
+  AND user_credits_in_window > network_p99_credits_in_window
+action:
+  verdict: FLAG
+  log_fields:
+    - uid
+    - genesis_end_time
+    - current_time
+    - lookback_days_after_genesis
+    - user_credits_in_window
+    - network_p99_credits_in_window
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  早期全网样本小，p99 统计不稳；建议增加最小样本量与置信区间约束后再启用自动化处置。
+  命中建议先 FLAG，不立即 BLOCK。
+

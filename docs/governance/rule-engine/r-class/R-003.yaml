@@ -1,0 +1,34 @@
+rule_id: R-003
+version: "1.0"
+category: physical_paradox
+trigger: pre_execution
+severity: block
+description: >
+  单次任务 T_phy 超过 24 小时（1440 分钟）。
+  作为物理不可持续上限，防止虚构超长工时。
+inputs:
+  - task_id
+  - task_start_time
+  - task_end_time
+  - declared_minutes
+  - max_minutes_per_task          # default: 1440
+condition: >
+  minutes_between(task_start_time, task_end_time) > max_minutes_per_task
+  OR declared_minutes > max_minutes_per_task
+action:
+  verdict: BLOCK
+  log_fields:
+    - task_id
+    - task_start_time
+    - task_end_time
+    - declared_minutes
+    - computed_minutes
+    - max_minutes_per_task
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  极少数跨日护理/陪护可能存在“持续服务”叙事，但仍不应以单任务形式结算。
+  建议产品侧拆分为多个连续任务分段，每段独立存证。
+

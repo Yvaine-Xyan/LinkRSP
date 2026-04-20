@@ -1,0 +1,28 @@
+rule_id: R-011
+version: "1.0"
+category: governance_manipulation
+trigger: ipo_scan
+severity: flag
+description: >
+  单一 UID 控制超过 5 个不同社区的发起人/管理权限，触发中心化控制识别。
+  该项位于 §6.6 混合类：确定性计数可先由规则引擎执行，后续可叠加模板相似性与投票模式审计。
+inputs:
+  - uid
+  - community_admin_count
+  - threshold_admin_communities     # default: 5
+condition: >
+  community_admin_count > threshold_admin_communities
+action:
+  verdict: FLAG
+  log_fields:
+    - uid
+    - community_admin_count
+    - threshold_admin_communities
+    - rule_id
+    - rule_version
+  notify: community_admin
+  audit_trail: required
+false_positive_notes: >
+  早期孵化期可能出现“同一维护者扶持多个社区”的正常现象。
+  建议默认 FLAG 并要求披露治理结构，而非直接 BLOCK。
+

@@ -1,0 +1,45 @@
+rule_id: R-002
+version: "1.0"
+category: physical_paradox
+trigger: post_execution
+severity: block
+description: >
+  两次 V=2（近场对碰）存证之间的位移速度超过合理交通速度阈值（默认 200 km/h）。
+  作为物理悖论拦截与 V=2 证据链可信度保护。
+inputs:
+  - uid
+  - task_id
+  - verification_level           # 仅当 V==2 才触发
+  - handshake_timestamp
+  - handshake_location_lat
+  - handshake_location_lng
+  - previous_handshake_timestamp
+  - previous_handshake_location_lat
+  - previous_handshake_location_lng
+  - max_speed_kmh                # default: 200
+condition: >
+  current.verification_level == 2
+  AND previous.exists == true
+  AND delta_minutes(current.handshake_timestamp, previous.handshake_timestamp) > 0
+  AND haversine_km(current.handshake_location, previous.handshake_location)
+      / (delta_minutes(current.handshake_timestamp, previous.handshake_timestamp) / 60.0)
+      > max_speed_kmh
+action:
+  verdict: BLOCK
+  log_fields:
+    - uid
+    - task_id
+    - previous_task_id
+    - delta_minutes
+    - distance_km
+    - computed_speed_kmh
+    - max_speed_kmh
+    - rule_id
+    - rule_version
+  notify: submitter
+  audit_trail: required
+false_positive_notes: >
+  坐标误差、时间戳漂移或室内定位误差可能造成速度误判。
+  若握手位置来自低精度源，建议降级为 FLAG 并等待人工复核；
+  也可叠加“需同时触发 R-001 或轨迹异常”才 BLOCK 的组合策略。
+

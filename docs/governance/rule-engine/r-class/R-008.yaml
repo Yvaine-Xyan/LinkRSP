@@ -1,0 +1,34 @@
+rule_id: R-008
+version: "1.0"
+category: credit_arbitrage
+trigger: periodic_audit
+severity: flag
+description: >
+  同一社区平均 D 值持续超过全网中位数 1.5 倍超过 30 天时，触发共振抑制/降权审计。
+  作为 System Damping 的可执行触发条件。
+inputs:
+  - community_id
+  - period_days                  # default: 30
+  - community_avg_d
+  - network_median_d
+  - deviation_multiplier         # default: 1.5
+condition: >
+  community_avg_d > (network_median_d * deviation_multiplier)
+  AND sustained_days >= period_days
+action:
+  verdict: FLAG
+  log_fields:
+    - community_id
+    - period_days
+    - sustained_days
+    - community_avg_d
+    - network_median_d
+    - deviation_multiplier
+    - rule_id
+    - rule_version
+  notify: community_admin
+  audit_trail: required
+false_positive_notes: >
+  低样本量社区在早期可能波动剧烈；建议要求最小样本量门槛后才触发。
+  该规则通常用于“触发更敏感 K_global 响应/降权”，不必直接 BLOCK。
+

@@ -1,0 +1,30 @@
+rule_id: R-012
+version: "1.0"
+category: sybil_defense
+trigger: registration
+severity: flag
+description: >
+  同一 IP 段在 24 小时内注册超过 10 个 UID，触发女巫攻击防御。
+  位于 §6.6 混合类：确定性计数由规则引擎执行；后续可叠加设备指纹/行为模式审计。
+inputs:
+  - ip_cidr
+  - window_hours                 # default: 24
+  - registrations_in_window
+  - threshold_registrations       # default: 10
+condition: >
+  registrations_in_window > threshold_registrations
+action:
+  verdict: FLAG
+  log_fields:
+    - ip_cidr
+    - window_hours
+    - registrations_in_window
+    - threshold_registrations
+    - rule_id
+    - rule_version
+  notify: operator
+  audit_trail: required
+false_positive_notes: >
+  校园/企业 NAT 出口可能造成误报。
+  建议默认 FLAG 并采用分级策略：限制注册频率、加强验证、或要求额外存证，而非一刀切封禁。
+
