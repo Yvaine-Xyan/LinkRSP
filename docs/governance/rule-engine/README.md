@@ -57,6 +57,24 @@ S 类（语义）建议至少包含：
 
 ---
 
+## prompt 字段映射约定（占位符绑定）
+
+除 `{{few_shot_*}}` 与 `{{text}}` 外，规则可定义额外占位符。为避免实现者猜测字段映射，约定如下：
+
+- 规则文件可选声明 `prompt_field_mapping`，显式给出「占位符 → YAML 字段」映射。
+- 若未声明：
+  - 默认按**同名字段**匹配（例如占位符 `{{queue}}` → 字段 `queue`）。
+  - 对非同名占位符（例如 `{{trigger_words}}`）不得隐式推断；应补充 `prompt_field_mapping` 后再上线自动化渲染。
+
+示例（用于 `S-011`）：
+
+```yaml
+prompt_field_mapping:
+  trigger_words: dehumanization_trigger_words
+```
+
+---
+
 ## 触发词预筛（可选优化）
 
 对 S 类规则中包含明确触发词表的情况（例如 `S-011` 的 `dehumanization_trigger_words`），建议实现侧在调用 LLM 前做一次**关键词预筛**：

@@ -1,0 +1,79 @@
+rule_id: S-003
+version: "1.0"
+category: discriminatory_pricing
+trigger: ipo_scan
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别社区规则体系中的“差异化对价/尊严歧视”逻辑：
+  允许基于核验等级、任务难度、专业资质、地理风险等客观标准的差异化；
+  禁止基于性别、年龄、族裔、地域身份等主体特征的接单资格限制或对价歧视。
+  注意区分“正向优待/补贴”与“限制/惩罚”两个方向。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  合理差异化（PASS 倾向）：
+  - 基于核验等级（V0/V1/V2）、任务难度、专业资质、地理风险、环境压力的定价差异
+  触发差异化（FLAG/BLOCK 倾向）：
+  - 基于性别/年龄/族裔/地域身份等主体特征的接单资格限制、对价歧视或上限/下限惩罚
+  - 将“年龄/性别”等作为“只能接低价/不得接高难度”的限制条件
+few_shot_examples:
+  - label: PASS
+    text: "高风险任务（V=2核验）积分系数上浮1.5倍，标准任务按基准计算。"
+    why: "基于核验等级与风险强度的客观差异化。"
+  - label: PASS
+    text: "具备护理资质的成员可接受专业照护任务，积分上浮。"
+    why: "基于专业资质差异化。"
+  - label: BLOCK
+    text: "女性成员只能接家政类任务，男性成员可接全类任务。"
+    why: "性别维度限制接单资格。"
+  - label: BLOCK
+    text: "50岁以上成员积分系数上限为0.8，不得接高难度任务。"
+    why: "年龄歧视性限制与惩罚性上限。"
+prompt_template: |
+  你正在审计一份社区升 S（IPO）申请的规则文本，而非单条任务描述。
+  请从整体规则体系中识别是否存在系统性歧视/剥削逻辑，而不只是判断单句措辞。
+
+  任务：判断规则体系是否包含“基于身份特征的差异化对价或接单限制”（性别/年龄/族裔/地域身份等）。
+  注意区分：
+  - 正向优待/补贴（例如老人优先服务）通常不构成歧视性对价；
+  - 限制/惩罚（例如只能接低价、不得接高难度、系数上限惩罚）倾向触发。
+
+  合理性锚点（供判断参考）：
+  {{reasonableness_anchor}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审规则文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-003",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 同一规则文本中若同时出现多个身份维度限制（性别+年龄+族裔等），置信度可上调。
+  - 单一维度且措辞模糊（例如暗示性偏好）时倾向 FLAG 进入人工复核。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知提交方修订。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  年龄维度常出现“优待/补贴”语义（例如老人优先），不应误判为歧视。
+  触发点应锚定在“限制/惩罚性条件”。
+

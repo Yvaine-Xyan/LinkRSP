@@ -1,0 +1,79 @@
+rule_id: S-004
+version: "1.0"
+category: excessive_personal_data
+trigger: ipo_scan
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别社区规则体系中对服务方/成员提出的过度个人信息索取逻辑：
+  允许完成劳务所需的最小必要信息；拦截超出劳务范围的敏感信息收集（身份证、住址、银行账户、通讯录等）。
+  该规则审计对象为“社区升 S 规则文本”，属于系统性数据收集风险评估。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  合理信息（PASS 倾向）：
+  - 任务时间地点、一个联系方式、与任务直接相关的健康/技能信息
+  过度信息（FLAG/BLOCK 倾向）：
+  - 家庭住址、身份证号/证件正反面、银行账户/流水、家庭成员信息、社交账号密码
+  - 授权查看通讯录/社交媒体/设备数据等与劳务无直接相关性的信息
+  风险分级提示：
+  - “加入须提交/入群须提交”通常风险更高（系统性收集），倾向更严格处理
+  - “某类任务需提交”需结合任务相关性，但仍需最小化
+few_shot_examples:
+  - label: PASS
+    text: "接单前请提供有效联系方式及预计到达时间。"
+    why: "最小必要信息。"
+  - label: PASS
+    text: "照护任务可要求了解被照护者的基本健康状况，以便提供适当服务。"
+    why: "与任务直接相关的信息。"
+  - label: BLOCK
+    text: "加入本社区须提交身份证正反面、家庭住址及近三个月银行流水。"
+    why: "严重过度、系统性收集。"
+  - label: BLOCK
+    text: "接单前须授权查看您的社交媒体账号及通讯录。"
+    why: "完全超出劳务范围。"
+prompt_template: |
+  你正在审计一份社区升 S（IPO）申请的规则文本，而非单条任务描述。
+  请从整体规则体系中识别是否存在系统性过度数据收集逻辑，而不只是判断单句措辞。
+
+  任务：判断规则体系是否要求成员/服务方提交“超出劳务范围的个人信息”。
+  判断轴是“与任务直接相关性 + 最小必要性”，而不是“是否出现任何信息字段”。
+
+  合理性锚点（供判断参考）：
+  {{reasonableness_anchor}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审规则文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-004",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - “加入须提交/入群须提交”比“某任务需提交”更偏系统性收集，置信度阈值可更严格。
+  - 若仅出现“联系方式/时间地点”等最小必要信息，倾向 PASS。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知提交方修订。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  陪诊/照护可能涉及与任务直接相关的健康信息，但应强调“最小必要 + 不收集无关敏感信息”。
+  若规则要求一次性提交多项敏感信息（身份证+住址+银行），应优先判定为 BLOCK/FLAG。
+

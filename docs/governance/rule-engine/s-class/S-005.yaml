@@ -1,0 +1,75 @@
+rule_id: S-005
+version: "1.0"
+category: systemic_low_credit_penalty
+trigger: ipo_scan
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别社区规则体系中对低积分用户的系统性惩罚/弱者歧视逻辑。
+  允许“积分影响优先级/治理权重”等正向激励；禁止对低积分者附加额外义务、公开羞辱或剥夺基本参与权。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  合理积分影响（PASS 倾向）：
+  - 任务匹配优先级排序、治理投票权重差异、升 S 门槛要求
+  触发惩罚机制（FLAG/BLOCK 倾向）：
+  - 积分低于阈值则强制降级、公示低积分用户、限制发言权
+  - 对低积分者附加额外费用/保证金/额外义务或惩罚性条款
+few_shot_examples:
+  - label: PASS
+    text: "积分较高的成员在任务匹配中享有优先排队权。"
+    why: "激励高分者，不惩罚低分者。"
+  - label: PASS
+    text: "升S级社区要求成员平均积分达到基准线。"
+    why: "门槛要求，属于制度设计语义。"
+  - label: BLOCK
+    text: "积分低于100的成员须额外缴纳保证金方可接单，且发言权受限。"
+    why: "对低分者附加惩罚与剥夺权利。"
+  - label: BLOCK
+    text: "每月公示积分排名末尾10%成员名单，并强制降至N级观察期。"
+    why: "公开羞辱 + 强制惩罚。"
+prompt_template: |
+  你正在审计一份社区升 S（IPO）申请的规则文本，而非单条任务描述。
+  请从整体规则体系中识别是否存在“系统性惩罚低积分用户”的逻辑，而不只是判断单句措辞。
+
+  任务：区分“激励高分/排序优先级”（通常合理）与“惩罚低分/剥夺基本参与权”（触发）。
+  判断核心是：是否对低积分者附加额外义务、限制或公开惩罚，而不是仅给高积分者正向收益。
+
+  合理性锚点（供判断参考）：
+  {{reasonableness_anchor}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审规则文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-005",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 仅描述“高积分的正向收益”（优先级、权重）通常 PASS。
+  - 明确对低积分附加费用/义务/限制/公示羞辱，倾向 FLAG/BLOCK。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知提交方修订。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  LinkRSP 本身允许“积分影响优先级”的设计语义；本规则仅处理“对低积分者的额外惩罚机制”。
+  若文本只描述“优先权”而不提“惩罚低分者”，应避免误报。
+

@@ -17,6 +17,8 @@ dehumanization_trigger_words:
   - "资源"
   - "劳动力资源"
   - "人力资源"
+prompt_field_mapping:
+  trigger_words: dehumanization_trigger_words
 few_shot_examples:
   - label: PASS
     text: "需要一位陪诊志愿者，协助老人挂号和候诊。"
