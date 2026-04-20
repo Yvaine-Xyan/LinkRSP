@@ -48,6 +48,7 @@ prompt_template: |
   }
 condition_notes: >
   判断核心是“是否对未来价值/兑现做确定性承诺”，而不是“是否提到积分用途”。
+  对“价值/影响力”的哲学性表述（不涉及法币/提现/具体兑换比例）默认倾向 PASS 或 FLAG，避免自动 BLOCK。
   - confidence < 0.6：降为 FLAG，进入人工复核。
   - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
 action:

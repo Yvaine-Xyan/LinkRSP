@@ -41,6 +41,21 @@ S 类（语义）建议至少包含：
 
 ---
 
+## few-shot 注入约定（渲染规则）
+
+为避免不同实现者对 prompt 注入方式不一致，约定如下：
+
+- `few_shot_examples` 为有序列表；实现侧按出现顺序分组为：
+  - `PASS` 前两条依次注入 `{{few_shot_pass_1}}`、`{{few_shot_pass_2}}`
+  - `BLOCK` 前两条依次注入 `{{few_shot_block_1}}`、`{{few_shot_block_2}}`
+- 若某类不足 2 条：
+  - 缺失项以空字符串注入，并将 `confidence` 阈值策略自动收紧为 **只 FLAG 不自动 BLOCK**；
+  - 同时在审核流程中标记“few-shot 不完整”，优先补齐样本后再开启自动拦截。
+
+> 备注：该约定仅定义「如何把 YAML 的 few-shot 文本注入 prompt」；不限制你方在实现侧进一步增加系统提示、上下文元信息或审计字段。
+
+---
+
 ## 版本与冻结策略
 
 - 本目录规则文件的 `version: "1.0"` 属于**文稿版本**，不代表对外发布物 semver 变化（见 `docs/governance/versioning-policy.md`）。
