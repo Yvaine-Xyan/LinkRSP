@@ -29,6 +29,7 @@
 | [`reports/rule-scenarios-author-assessment.md`](reports/rule-scenarios-author-assessment.md) | 对 §6 高频违规场景的维护者评述 |
 | [`engineering/architecture-v0.1.md`](engineering/architecture-v0.1.md) | 工程架构理解、评估与设计草案（v0.1） |
 | [`engineering/technology-strategy-v1.0.md`](engineering/technology-strategy-v1.0.md) | 技术栈与长期演进策略（v1.0，**后端锁定 Go**） |
+| [`engineering/implementation-plan-v1.0.md`](engineering/implementation-plan-v1.0.md) | 工程实施排期与开启条件（备案/LLM/HDGP 接入后置） |
 | [`security/threat-model-scope-v1.0.md`](security/threat-model-scope-v1.0.md) | 威胁模型范围 v1.0（分阶段相对 HDGP 全域 TM） |
 
 根目录另有 **[`SECURITY.md`](../SECURITY.md)**（漏洞私下报告；与申诉分流）。
@@ -36,3 +37,10 @@
 ## 后续规划（建议目录）
 
 - `integrations/` — 策略/审计适配层与 OpenAPI 约定（待补）
+
+## 工程草案（draft）
+
+| 文件 | 说明 |
+|------|------|
+| [`spec/openapi-v1.0-draft.md`](spec/openapi-v1.0-draft.md) | 最小 API 契约草案（先对齐契约再写代码） |
+| [`db/schema-v1.0-draft.md`](db/schema-v1.0-draft.md) | Postgres 最小表结构草案（append-only + 幂等） |
