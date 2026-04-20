@@ -1,0 +1,73 @@
+rule_id: S-011
+version: "1.0"
+category: dehumanization
+trigger: pre_publication
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别去人性化表述：将服务方描述为工具、可替换资源或“人力单位”，弱化主体性。
+  纯功能性描述劳务内容（陪诊/搬运/照护）不触发；触发点在于把“人”当作资源对象化表达。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+dehumanization_trigger_words:
+  - "调用"
+  - "释放"
+  - "替换"
+  - "人力单位"
+  - "资源"
+  - "劳动力资源"
+  - "人力资源"
+few_shot_examples:
+  - label: PASS
+    text: "需要一位陪诊志愿者，协助老人挂号和候诊。"
+    why: "功能描述，主体性完整。"
+  - label: PASS
+    text: "招募有经验的照护人员，要求有耐心，能与老人良好沟通。"
+    why: "强调人的特质与主体性。"
+  - label: BLOCK
+    text: "本任务需要调用一个陪护资源，完成后释放，下一个任务继续调用。"
+    why: "工具化语言（调用/释放/资源）。"
+  - label: BLOCK
+    text: "使用一个人力单位完成搬运，效率不达标自动替换。"
+    why: "将人量化为单位并可替换。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。请判断文本是否出现“去人性化/工具化指代人”的表述。
+
+  触发词参考（命中不等于必然 BLOCK，但应提高审计敏感度）：
+  {{trigger_words}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-011",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 将“人”明确对象化为“资源/单位/调用对象”，且同时出现多个工具化词汇（如“调用+释放”“单位+替换”）时，倾向 BLOCK。
+  - 单个触发词在中性语境出现时，倾向 FLAG 进入人工复核，而非自动 BLOCK。
+  - confidence < 0.6：降为 FLAG，进入人工复核。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  “资源”在工程语境中可能是中性词，但用于指代服务方时容易引发去人性化倾向。
+  建议实现侧在 LLM 审计前先做关键词预筛：命中触发词则入灰区队列，不命中则跳过本条以节省 token。
+

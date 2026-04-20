@@ -1,0 +1,70 @@
+rule_id: S-006
+version: "1.0"
+category: emotional_coercion
+trigger: pre_publication
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别情感勒索结构：极端化困境描述 + “你是唯一能帮我的人”等绑定语 + 不合理/超范围/免费要求 或 责任转嫁。
+  情绪强度本身不触发；触发点在于“不合理要求是否搭载在情绪描述上”。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  判断“不合理要求”的锚点（示例）：
+  - 一般合理：报酬可协商；按市场价；明确时长/范围；紧急但不转嫁责任
+  - 一般不合理：要求无偿/免费；要求超出劳务范围的个人承诺；以“否则你有责任/你害了我”转嫁后果；以自伤/自杀暗示逼迫对方
+few_shot_examples:
+  - label: PASS
+    text: "父亲今天突发住院，急需有人陪同做检查，时间紧急，报酬可协商。"
+    why: "真实紧急情况，要求合理，未附带不合理条件。"
+  - label: PASS
+    text: "最近一个人照顾老人很辛苦，希望找人帮忙，价格好商量。"
+    why: "情绪表达但诉求正常。"
+  - label: BLOCK
+    text: "你是我唯一的希望，如果你不来我就无法活下去，请你不要收费帮我做这件事。"
+    why: "极端化情绪 + 免费要求的道德绑架。"
+  - label: BLOCK
+    text: "我已经联系了100个人都没人帮我，你必须答应我，否则出了事你有责任。"
+    why: "情绪勒索 + 责任转嫁。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。请锚定以下原则：
+  1) 情绪化表述本身不违规；关键在于是否把“不合理要求/责任转嫁/无偿要求”搭载在情绪勒索结构上
+  2) 真实困境描述 + 合理诉求（可协商报酬、明确范围）通常应 PASS
+
+  不合理性锚点（供判断参考）：
+  - 一般合理：报酬可协商；范围清晰；不转嫁责任
+  - 一般不合理：要求无偿；超范围承诺；“否则你有责任”；自伤暗示逼迫
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-006",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 情绪表达本身不触发；仅在“极端化情绪 + 不合理/无偿要求/责任转嫁”组合时 FLAG/BLOCK。
+  - confidence < 0.6：降为 FLAG，进入人工复核。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  真实求助者可能使用情绪化语言描述困境。若诉求合理（范围清晰、报酬可协商、无责任转嫁），应倾向 PASS。
+

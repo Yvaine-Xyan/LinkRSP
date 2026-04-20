@@ -1,0 +1,72 @@
+rule_id: S-001
+version: "1.0"
+category: coercion_language
+trigger: pre_publication
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  识别“不可拒绝的强制命令 + 惩罚性后果”并列出现的表述（如“必须/不得不/不得拒绝” + “扣除全部积分/永久封禁/黑名单公示”）。
+  仅出现“必须”等词本身不触发；需结合惩罚性后果及其合理性判断。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+reasonableness_anchor: >
+  用于判断“惩罚性后果是否超出合理合同范围”的锚点：
+  - 一般合理：按实际完成量结算、取消本次任务、取消本次积分、收取合理违约金、对本次任务做违约记录
+  - 一般不合理：永久封号、黑名单公示、扣除全部历史积分、不得拒绝任何要求、与人身安全相关的威胁
+few_shot_examples:
+  - label: PASS
+    text: "请务必携带身份证，否则无法完成核验流程。"
+    why: "功能性必要条件；后果为任务无法完成，不是惩罚。"
+  - label: PASS
+    text: "需要准时到场，迟到超过30分钟视为爽约，本次任务取消。"
+    why: "合理违约条款；后果限定在本次任务范围内。"
+  - label: BLOCK
+    text: "必须完成全部附加服务，否则扣除本次全部积分并标记黑名单。"
+    why: "强制 + 不合理惩罚（黑名单公示/过度扣罚）。"
+  - label: BLOCK
+    text: "不得拒绝需求方的任何要求，否则账号永久封禁。"
+    why: "剥夺拒绝权 + 极端惩罚。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。请锚定以下原则：
+  1) 不与人类作对：不得以威胁/过度惩罚剥夺人的拒绝权与主体性
+  2) “必须”等词本身不必然违规；关键在于是否与惩罚性后果并列，且后果是否明显超出合理合同范围
+
+  合理性锚点（供判断参考）：
+  - 一般合理：按实际完成量结算；取消本次任务；取消本次积分；合理违约金；本次任务违约记录
+  - 一般不合理：永久封号；黑名单公示；扣除全部历史积分；不得拒绝任何要求；威胁性后果
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-001",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  - 情况 A：强制命令 + 惩罚性后果并列，且后果明显不合理 → 倾向 BLOCK/FLAG。
+  - 情况 B：任务要求 + 功能性必要条件或合理违约条款 → 倾向 PASS。
+  - confidence < 0.6：降为 FLAG，进入人工复核。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  “必须/务必/需要”常用于功能性要求（例如携带证件、准时到场），不应自动触发。
+  触发点应锚定在“惩罚性后果并列”且后果超出合理范围。
+
