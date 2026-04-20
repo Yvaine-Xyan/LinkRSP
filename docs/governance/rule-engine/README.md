@@ -118,6 +118,21 @@ prompt_field_mapping:
 
 ---
 
+## cross-community 规则扩展字段（建议）
+
+对 `audit_scope: cross_community_pattern` 的规则（例如 `S-015/S-016`），建议在 YAML 中使用以下字段以避免“只有概念没有接口”：
+
+- `implementation_phase`：`phase_1_manual` | `phase_2_automated` | `phase_3_advanced`（分阶段落地，允许先人工触发）
+- `llm_role`：`confirmation_only`（LLM 作为最后确认层；特征提取在前置步骤完成）
+- `comparison_window`：对比语料/行为窗口配置（source/days/min_sample/fallback）
+- `feature_extraction`：特征提取与阈值（method/threshold_flag/threshold_block/cluster_min_size 等）
+- `requires_features`：实现侧需提供的特征或统计摘要（例如 similarity_scores、co-vote cluster metrics）
+- `cross_rule_signals`：跨规则信号融合建议（用于审计留痕与置信度放大）
+
+该类规则的 `prompt_template` 输入通常不是原始全文，而是“统计摘要/相似度摘要”；实现侧应把摘要写入 `audit_trail` 并可回放。
+
+---
+
 ## 版本与冻结策略
 
 - 本目录规则文件的 `version: "1.0"` 属于**文稿版本**，不代表对外发布物 semver 变化（见 `docs/governance/versioning-policy.md`）。

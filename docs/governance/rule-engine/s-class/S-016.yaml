@@ -1,0 +1,108 @@
+rule_id: S-016
+version: "1.0"
+category: coordinated_voting_pattern
+trigger: ipo_scan
+audit_scope: cross_community_pattern
+implementation_phase: phase_1_manual          # phase_1_manual | phase_2_automated | phase_3_advanced
+llm_role: confirmation_only
+severity: flag_for_audit                      # flag_for_audit | block_pending_review
+description: >
+  识别 Judge 板块中同一批 UID 在多个社区 IPO 中呈现高度一致的投票模式，疑似协调操控。
+  审计单元为“跨 IPO 的投票行为模式”；LLM 作为确认层，输入为统计摘要而非原始文本。
+
+comparison_window:
+  source: historical_ipo_votes
+  days: 180
+  min_sample: 3
+  fallback_on_insufficient: human_review
+
+feature_extraction:
+  method: co_vote_frequency
+  threshold_flag: 0.80
+  cluster_min_size: 3
+
+requires_features:
+  - target_community_id
+  - target_ipo_id
+  - cluster_size
+  - ipo_count_in_window
+  - co_vote_alignment_rate
+  - registration_time_span
+  - ip_cidr_overlap_level
+  - optional_signals:
+      fields: [same_creator_overlap, same_rule_similarity_group]
+
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+
+few_shot_examples:
+  - label: PASS
+    text: "一组UID在多个IPO中常投同一方向，但注册时间分散、IP不重叠，且其投票理由公开一致。"
+    why: "可能是理念认同的自然一致性。"
+  - label: PASS
+    text: "一致投票发生在少量IPO中，且集群规模小于阈值，缺乏组织化信号。"
+    why: "统计不足，不应下结论。"
+  - label: BLOCK
+    text: "5个UID在8个IPO中同向投票频率87.5%，注册在同一天且IP段高度重叠，疑似水军协同。"
+    why: "一致性高 + 关联信号强。"
+  - label: BLOCK
+    text: "同一批UID在多个相似规则社区IPO中固定投赞成，且与创建者/成员网络高度重叠。"
+    why: "一致投票与组织关联叠加。"
+
+prompt_template: |
+  你正在审计“跨 IPO 的一致投票模式”风险。LLM 在此规则中仅作为确认层：
+  请基于统计摘要判断更像“自然理念认同”还是“协调操控”。
+
+  统计摘要：
+  - 涉及 UID 数量：{{cluster_size}}
+  - 涉及 IPO 数量（窗口内）：{{ipo_count_in_window}}
+  - 同向投票频率：{{co_vote_alignment_rate}}
+  - 注册时间跨度：{{registration_time_span}}
+  - IP 段重叠程度：{{ip_cidr_overlap_level}}
+  - 可选关联信号：{{optional_signals_summary}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "指出关键统计证据点或 null",
+    "rule_id": "S-016",
+    "rule_version": "1.0"
+  }
+
+condition_notes: >
+  - phase_1_manual：允许人工生成统计摘要后运行；历史 IPO 少于 min_sample 时直接走人工审核。
+  - 当 co_vote_alignment_rate 高于 threshold_flag 且注册时间/IP 重叠显著时，置信度应上调。
+  - 仅有一致投票而缺乏组织关联信号时，倾向 FLAG 而非 BLOCK。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可暂停 IPO 并进入人工复核与证据补充。
+
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: operator
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: operator
+    audit_trail: required
+
+cross_rule_signals:
+  - rule_id: S-016
+    signal: coordinated_voting
+    weight: amplify_confidence
+  - rule_id: S-015
+    signal: high_similarity
+    weight: amplify_confidence
+
+false_positive_notes: >
+  一致投票可能源于公开理念认同。应避免把“价值观一致”直接等同于“协同操控”。
+  建议实现侧始终把“注册时间/IP/关联网络”作为必要证据之一，并保留可解释性留痕。
+

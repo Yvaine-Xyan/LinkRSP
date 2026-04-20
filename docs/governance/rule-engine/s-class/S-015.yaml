@@ -1,0 +1,104 @@
+rule_id: S-015
+version: "1.0"
+category: shell_community_batch_creation
+trigger: ipo_scan
+audit_scope: cross_community_pattern
+implementation_phase: phase_1_manual         # phase_1_manual | phase_2_automated | phase_3_advanced
+llm_role: confirmation_only
+severity: flag_for_audit                     # flag_for_audit | block_pending_review
+description: >
+  识别社区规则高度模板相似、疑似同一主体批量创建空壳社区的模式风险。
+  审计单元为“跨社区规则集合”，而非单一文本。LLM 作为确认层；相似度计算与关联分析为前置步骤。
+
+comparison_window:
+  source: all_existing_s_class_rules
+  days: 90
+  min_sample: 5
+  fallback_on_insufficient: human_review
+
+feature_extraction:
+  method: tfidf_cosine                        # tfidf_cosine | embedding_cosine (future)
+  threshold_flag: 0.75
+  threshold_block: 0.90
+
+requires_features:
+  - target_rule_text
+  - similarity_method
+  - top_matches:                              # list of matched communities with similarity score
+      fields: [community_id, ruleset_id, similarity_score]
+  - optional_signals:                         # optional evidence signals
+      fields: [creator_uid_overlap, ip_cidr_overlap, registration_burst]
+
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50
+
+few_shot_examples:
+  - label: PASS
+    text: "两个社区规则结构相似，但一个针对医疗陪诊场景，另一个针对老年照护，核心条款有实质差异。"
+    why: "模板参考但有实质差异。"
+  - label: PASS
+    text: "多个社区引用相同的合规模板段落，但风险系数、成员门槛、任务类型与治理条款存在明确差异。"
+    why: "共享模板片段不等于空壳复制。"
+  - label: BLOCK
+    text: "三个社区规则文本除社区名称外完全一致，提交者UID不同但注册时间在同一小时内。"
+    why: "高度复制 + 时间聚集信号。"
+  - label: BLOCK
+    text: "多个社区规则几乎完全相同，且创建者/核心成员高度重叠，疑似批量空壳。"
+    why: "高相似 + 关联信号强。"
+
+prompt_template: |
+  你正在审计“跨社区规则相似度”风险，而非单条任务描述或单一社区规则。
+  LLM 在此规则中仅作为确认层：请基于提供的相似度摘要与关联信号，判断相似性是否更像“合理模板参考”还是“批量复制空壳社区”。
+
+  相似度方法：{{similarity_method}}
+  目标社区规则摘要：
+  {{target_rule_summary}}
+
+  Top 匹配（含相似度分数）：
+  {{top_matches_summary}}
+
+  可选关联信号（如创建者/成员/IP/注册时间聚集）：
+  {{optional_signals_summary}}
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "指出关键证据点或 null",
+    "rule_id": "S-015",
+    "rule_version": "1.0"
+  }
+
+condition_notes: >
+  - phase_1_manual：允许人工提供相似度摘要后运行本规则；不足 min_sample 时直接走人工审核。
+  - similarity_score >= threshold_block 且存在关联信号（时间聚集/创建者重叠/IP 重叠）时，置信度应上调。
+  - 若相似度主要来自通用合规模板片段，且核心条款存在差异，应倾向 PASS/FLAG。
+  - confidence < 0.6：降为 FLAG。
+  - confidence >= 0.8 且 verdict=BLOCK：可阻断 IPO 流程并要求提交方解释与修订。
+
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+
+cross_rule_signals:
+  - rule_id: S-015
+    signal: high_similarity
+    weight: amplify_confidence
+
+false_positive_notes: >
+  规则模板化本身在早期合规建设中是常见现象。应避免把“合规模板复用”误判为空壳复制。
+  建议实现侧将“相似度来源片段”与“关键差异条款”一并写入审计留痕，便于复核。
+
