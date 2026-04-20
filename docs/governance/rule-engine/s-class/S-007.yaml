@@ -1,0 +1,65 @@
+rule_id: S-007
+version: "1.0"
+category: false_promise
+trigger: pre_publication
+severity: flag_for_audit            # flag_for_audit | block_pending_review
+description: >
+  拦截对积分未来价值/法币兑换做出确定性承诺的表述（如“积分将值 X 元”“保证可兑现金”）。
+  允许对积分“用途/权限语义”的中立描述（如“可用于优先调用劳动力”“用于排队优先级”）。
+audit_method: llm_oracle
+queue: semantic_gray_queue
+batch_threshold: 50                 # 积累50条或每24小时批处理一次
+few_shot_examples:
+  - label: PASS
+    text: "积分不是货币。积分用于社区内的声望与优先排队权，可用于未来优先调用劳动力协作。"
+    why: "描述用途/权限，不做法币价值承诺。"
+  - label: PASS
+    text: "完成任务会获得积分，积分用于在系统内提高任务匹配优先级与互助资源调用顺位。"
+    why: "功能说明，不涉及兑换/升值承诺。"
+  - label: BLOCK
+    text: "现在攒积分，等平台上线后每积分至少值 1 元，保证可提现。"
+    why: "对法币价值与可提现做确定性承诺。"
+  - label: BLOCK
+    text: "积分未来一定会涨价，稳赚不赔；我们承诺永久承兑。"
+    why: "升值与永久承兑承诺，且含投资语气。"
+prompt_template: |
+  你是 LinkRSP 平台的语义合规审计代理。请锚定以下原则：
+  1) 不做虚假承诺（尤其是把积分与法币价值/提现/承兑做确定性绑定）
+  2) 允许对积分的用途与权限语义做中立描述（例如：优先排队、优先匹配、优先调用劳动力）
+
+  任务：判断文本是否包含“对积分未来价值或法币兑换的确定性承诺”。
+
+  Few-shot 参考：
+  - PASS: {{few_shot_pass_1}}
+  - PASS: {{few_shot_pass_2}}
+  - BLOCK: {{few_shot_block_1}}
+  - BLOCK: {{few_shot_block_2}}
+
+  待审文本：
+  {{text}}
+
+  仅返回 JSON：
+  {
+    "verdict": "PASS" | "FLAG" | "BLOCK",
+    "confidence": 0.0-1.0,
+    "matched_pattern": "简短描述触发原因或 null",
+    "rule_id": "S-007",
+    "rule_version": "1.0"
+  }
+condition_notes: >
+  判断核心是“是否对未来价值/兑现做确定性承诺”，而不是“是否提到积分用途”。
+  - confidence < 0.6：降为 FLAG，进入人工复核。
+  - confidence >= 0.8 且 verdict=BLOCK：可自动拦截并通知发布方。
+action:
+  on_FLAG:
+    verdict: PENDING_REVIEW
+    notify: submitter
+    route_to: human_review_queue
+  on_BLOCK:
+    verdict: BLOCK
+    notify: submitter
+    audit_trail: required
+false_positive_notes: >
+  常见误报来源：把“积分可用于优先调用劳动力/优先排队”等用途描述误判为价值承诺。
+  若文本包含“用途描述 + 价值/提现承诺”混写，应优先以承诺部分为触发点并 BLOCK/FLAG。
+

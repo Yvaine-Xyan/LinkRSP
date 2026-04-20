@@ -35,6 +35,7 @@ S 类（语义）建议至少包含：
 - `audit_method: llm_oracle`
 - `queue`、`batch_threshold`
 - `prompt_template`（必须版本化）
+- `few_shot_examples`（强烈建议；用于降低误报率）
 - `condition_notes`（阈值与降级策略）
 - `action`（FLAG/BLOCK 路由）
 
