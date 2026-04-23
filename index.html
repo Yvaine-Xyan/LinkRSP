@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkRSP — 劳动力再平衡与生存韧性协议</title>
+  <meta name="description" content="去中心化劳动力互助协议。生存协议，织网自救。Decentralized labor mutual-aid protocol anchoring credits to auditable physical work.">
+  <link rel="canonical" href="https://www.linkrsp.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --g950: #061510;
+      --g900: #0B2218;
+      --g800: #163C28;
+      --g750: #1F5236;
+      --g700: #2D6A4F;
+      --g600: #40916C;
+      --g500: #52B788;
+      --g400: #74C69D;
+      --g300: #95D5B2;
+      --g200: #B7E4C7;
+      --g100: #D8F3DC;
+      --g50:  #EEF8F1;
+      --g10:  #F6FCF8;
+      --ink:  #162318;
+      --ink2: #344D3D;
+      --ink3: #637568;
+      --border: #D0ECD7;
+      --border2: #B7E4C7;
+      --white: #FFFFFF;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+      --shadow-sm: 0 1px 2px rgba(22,58,40,.06), 0 2px 8px rgba(22,58,40,.05);
+      --shadow: 0 1px 3px rgba(22,58,40,.08), 0 4px 16px rgba(22,58,40,.07);
+      --shadow-md: 0 2px 8px rgba(22,58,40,.10), 0 8px 32px rgba(22,58,40,.09);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--g10);
+      color: var(--ink);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══ NAV ═══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(246,252,248,.92);
+      backdrop-filter: blur(14px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1160px; margin: 0 auto; padding: 0 2rem;
+      height: 62px; display: flex; align-items: center; gap: 1.5rem;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .55rem;
+      text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo svg { display: block; }
+    .nav-logo .logotype {
+      font-size: 1.05rem; font-weight: 700;
+      letter-spacing: -.025em; color: var(--g700);
+    }
+    .nav-logo .badge {
+      font-size: .6rem; font-weight: 700; letter-spacing: .05em;
+      color: var(--g600); background: var(--g100); border: 1px solid var(--g200);
+      padding: .15em .5em; border-radius: 4px; text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: .1rem;
+      list-style: none; flex: 1;
+    }
+    .nav-links a {
+      font-size: .84rem; font-weight: 500; color: var(--ink2);
+      text-decoration: none; padding: .38rem .8rem; border-radius: 7px;
+      transition: background .15s, color .15s; white-space: nowrap;
+    }
+    .nav-links a:hover { background: var(--g100); color: var(--g700); }
+    .nav-links a.soon {
+      color: var(--ink3); cursor: default; position: relative;
+    }
+    .nav-links a.soon::after {
+      content: attr(data-tip);
+      position: absolute; top: calc(100% + 7px); left: 50%;
+      transform: translateX(-50%);
+      font-size: .68rem; font-weight: 600; color: var(--white);
+      background: var(--g800); padding: .22em .6em; border-radius: 5px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+    }
+    .nav-links a.soon:hover::after { opacity: 1; }
+    .nav-right { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+    .nav-gh {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .82rem; font-weight: 500; color: var(--ink2);
+      text-decoration: none; padding: .3rem .7rem; border-radius: 7px;
+      border: 1px solid var(--border); transition: border-color .15s, color .15s, background .15s;
+    }
+    .nav-gh:hover { border-color: var(--g400); color: var(--g700); background: var(--g50); }
+
+    /* Lang pill toggle */
+    .lang-pill {
+      display: flex; background: var(--g50);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 3px; gap: 2px;
+    }
+    .lang-pill button {
+      font-size: .77rem; font-weight: 600; letter-spacing: .01em;
+      padding: .26rem .65rem; border-radius: 5px;
+      border: none; cursor: pointer; transition: all .15s;
+      color: var(--ink3); background: transparent;
+    }
+    .lang-pill button.active { background: var(--g700); color: var(--white); }
+    .lang-pill button:not(.active):hover { color: var(--g700); background: var(--g100); }
+
+    /* ═══ HERO ═══ */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 7.5rem 2rem 6.5rem; text-align: center;
+    }
+    /* Subtle mesh grid */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(82,183,136,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(82,183,136,.07) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 100%);
+    }
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 75% 55% at 50% -5%, rgba(82,183,136,.22) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 40% at 88% 55%, rgba(116,198,157,.12) 0%, transparent 60%);
+    }
+    .hero-inner { max-width: 780px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--g600); background: var(--g100); border: 1px solid var(--g200);
+      padding: .32em 1em; border-radius: 20px; margin-bottom: 1.9rem;
+    }
+    .hero-eyebrow .pulse {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--g500);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .55; transform: scale(.85); }
+    }
+    .hero h1 {
+      font-size: clamp(2.3rem, 5.5vw, 3.6rem);
+      font-weight: 700; letter-spacing: -.035em; line-height: 1.12;
+      color: var(--g900); margin-bottom: 1.1rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--g600); }
+    .hero-sub {
+      font-size: 1.05rem; color: var(--ink2); font-weight: 400;
+      max-width: 580px; margin: 0 auto 2.75rem; line-height: 1.75;
+    }
+    .hero-cta {
+      display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .42rem;
+      padding: .72rem 1.45rem; border-radius: var(--radius);
+      font-size: .9rem; font-weight: 600; text-decoration: none;
+      transition: all .18s; cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: var(--g700); color: var(--white);
+      box-shadow: 0 1px 2px rgba(22,58,40,.22), 0 4px 14px rgba(45,106,79,.28);
+    }
+    .btn-primary:hover {
+      background: var(--g800); transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(22,58,40,.26), 0 7px 22px rgba(45,106,79,.34);
+    }
+    .btn-outline {
+      background: var(--white); color: var(--g700);
+      border: 1.5px solid var(--border2);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-outline:hover {
+      border-color: var(--g500); background: var(--g50); transform: translateY(-1px);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,.15); color: var(--white);
+      border: 1.5px solid rgba(255,255,255,.3);
+      backdrop-filter: blur(4px);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.25); transform: translateY(-1px); }
+    /* Domain tag */
+    .hero-domain {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .78rem; color: var(--ink3);
+    }
+    .hero-domain .dot-sep { color: var(--g400); }
+    .hero-domain a {
+      color: var(--g600); text-decoration: none; font-weight: 500;
+      border-bottom: 1px dashed var(--g300); transition: color .15s, border-color .15s;
+    }
+    .hero-domain a:hover { color: var(--g700); border-color: var(--g500); }
+
+    /* ═══ SECTION COMMONS ═══ */
+    section { padding: 5.5rem 2rem; }
+    .section-inner { max-width: 1160px; margin: 0 auto; }
+    .section-label {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--g500); margin-bottom: .65rem;
+    }
+    .section-title {
+      font-size: clamp(1.55rem, 3vw, 2.1rem); font-weight: 700;
+      letter-spacing: -.03em; color: var(--g900); margin-bottom: .65rem;
+      line-height: 1.2;
+    }
+    .section-desc {
+      font-size: .95rem; color: var(--ink2); max-width: 520px; line-height: 1.72;
+    }
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      max-width: 1160px; margin: 0 auto;
+    }
+
+    /* ═══ PILLARS ═══ */
+    .pillars { background: var(--white); }
+    .pillars-header { margin-bottom: 3rem; }
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 1.2rem;
+    }
+    .pillar-card {
+      background: var(--g10); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.8rem;
+      transition: border-color .2s, box-shadow .2s, transform .22s;
+    }
+    .pillar-card:hover {
+      border-color: var(--g400); box-shadow: var(--shadow-md); transform: translateY(-3px);
+    }
+    .pillar-icon {
+      width: 46px; height: 46px; border-radius: 11px;
+      background: var(--g100); display: flex; align-items: center;
+      justify-content: center; margin-bottom: 1.15rem; color: var(--g700);
+    }
+    .pillar-card h3 {
+      font-size: .96rem; font-weight: 700; color: var(--g800);
+      margin-bottom: .5rem; letter-spacing: -.015em;
+    }
+    .pillar-card p { font-size: .84rem; color: var(--ink2); line-height: 1.66; }
+    .pillar-tag {
+      display: inline-block; margin-top: 1rem;
+      font-size: .67rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      color: var(--g600); background: var(--g100); padding: .22em .6em; border-radius: 5px;
+    }
+
+    /* ═══ FORMULA ═══ */
+    .formula-section { background: var(--g10); }
+    .formula-box {
+      margin-top: 2.5rem; background: var(--g900);
+      border-radius: var(--radius-xl); padding: 2.75rem 3rem;
+      overflow-x: auto; box-shadow: 0 4px 24px rgba(11,34,24,.3);
+    }
+    .formula-eq {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(.88rem, 2vw, 1.12rem); color: var(--g300);
+      font-weight: 500; white-space: nowrap; margin-bottom: 2rem;
+      letter-spacing: .015em; padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(149,213,178,.12);
+    }
+    .formula-eq .hl { color: var(--g400); font-weight: 600; }
+    .formula-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .formula-table th {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--g500); text-align: left;
+      padding: .38rem 1rem .38rem 0; border-bottom: 1px solid rgba(149,213,178,.14);
+    }
+    .formula-table td {
+      padding: .58rem 1rem .58rem 0; border-bottom: 1px solid rgba(149,213,178,.07);
+      color: var(--g200); vertical-align: top;
+    }
+    .formula-table td:first-child {
+      font-family: 'JetBrains Mono', monospace; font-size: .8rem;
+      color: var(--g400); white-space: nowrap; padding-right: 2rem;
+    }
+    .formula-table td:last-child { color: rgba(149,213,178,.65); font-size: .79rem; }
+    .formula-note {
+      margin-top: 1.75rem; font-size: .78rem;
+      color: rgba(149,213,178,.5); line-height: 1.65;
+      border-top: 1px solid rgba(149,213,178,.1); padding-top: 1.2rem;
+    }
+
+    /* ═══ GOVERNANCE ═══ */
+    .gov-section { background: var(--white); }
+    .gov-layout {
+      margin-top: 3rem;
+      display: grid; grid-template-columns: 1fr 1.5fr; gap: 3.5rem;
+      align-items: start;
+    }
+    .gov-quote {
+      position: sticky; top: 80px;
+    }
+    .gov-quote blockquote {
+      font-size: 1.15rem; font-weight: 500; font-style: italic;
+      color: var(--g700); line-height: 1.65;
+      border-left: 3px solid var(--g400);
+      padding-left: 1.25rem; margin-bottom: 1.25rem;
+    }
+    .gov-quote .quote-en {
+      font-size: .9rem; font-weight: 400; font-style: italic;
+      color: var(--ink3); border-left: 3px solid var(--g200);
+      padding-left: 1.25rem; line-height: 1.65;
+    }
+    .gov-quote-attr {
+      margin-top: 1.2rem; font-size: .78rem; color: var(--ink3);
+    }
+    .gov-quote-attr a {
+      color: var(--g600); text-decoration: none; font-weight: 500;
+      border-bottom: 1px dashed var(--g300); transition: color .15s;
+    }
+    .gov-quote-attr a:hover { color: var(--g700); }
+    .gov-rules { display: flex; flex-direction: column; gap: .85rem; }
+    .gov-rule {
+      display: flex; gap: 1rem; padding: 1.2rem 1.4rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--g10);
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .gov-rule:hover {
+      border-color: var(--g400); background: var(--g50); transform: translateX(3px);
+    }
+    .gov-rule-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+      background: var(--g100); color: var(--g700);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+    }
+    .gov-rule-body { flex: 1; }
+    .gov-rule-body h4 {
+      font-size: .88rem; font-weight: 700; color: var(--g800);
+      margin-bottom: .25rem; letter-spacing: -.01em;
+    }
+    .gov-rule-body p { font-size: .8rem; color: var(--ink2); line-height: 1.58; }
+    @media (max-width: 860px) {
+      .gov-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .gov-quote { position: static; }
+    }
+
+    /* ═══ PHASES ═══ */
+    .phases-section { background: var(--g10); }
+    .phases-grid {
+      margin-top: 2.5rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1rem;
+    }
+    .phase-item {
+      display: flex; gap: 1rem; padding: 1.3rem 1.5rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--white);
+      align-items: flex-start;
+      transition: border-color .2s, background .2s;
+    }
+    .phase-item:hover { border-color: var(--g400); background: var(--g50); }
+    .phase-dot {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 800; margin-top: .1rem;
+    }
+    .phase-dot.done { background: var(--g700); color: var(--white); }
+    .phase-dot.next { background: var(--g100); color: var(--g600); border: 2px solid var(--g300); }
+    .phase-dot.later { background: var(--g10); color: var(--ink3); border: 1.5px solid var(--border); }
+    .phase-body h4 {
+      font-size: .88rem; font-weight: 600; color: var(--g800);
+      margin-bottom: .2rem; letter-spacing: -.01em;
+    }
+    .phase-body p { font-size: .79rem; color: var(--ink3); line-height: 1.55; }
+    .phase-label {
+      display: inline-block; font-size: .64rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: .15em .5em; border-radius: 4px; margin-bottom: .3rem;
+    }
+    .phase-label.done { color: var(--g600); background: var(--g100); }
+    .phase-label.next { color: #92400e; background: #fef3c7; }
+    .phase-label.later { color: var(--ink3); background: #edf1ed; }
+
+    /* ═══ DOCS ═══ */
+    .docs-section { background: var(--white); }
+    .docs-grid {
+      margin-top: 2.5rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+      gap: 1rem;
+    }
+    .doc-link {
+      display: flex; align-items: flex-start; gap: .88rem;
+      padding: 1.15rem 1.3rem; background: var(--g10);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      text-decoration: none;
+      transition: border-color .18s, box-shadow .18s, transform .18s;
+    }
+    .doc-link:hover {
+      border-color: var(--g400); box-shadow: var(--shadow); transform: translateY(-2px);
+    }
+    .doc-icon {
+      flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px;
+      background: var(--g100); display: flex; align-items: center;
+      justify-content: center; color: var(--g600);
+    }
+    .doc-meta { flex: 1; min-width: 0; }
+    .doc-meta strong {
+      display: block; font-size: .85rem; font-weight: 600;
+      color: var(--g800); margin-bottom: .15rem;
+    }
+    .doc-meta span { font-size: .75rem; color: var(--ink3); line-height: 1.48; }
+    .doc-arrow {
+      flex-shrink: 0; color: var(--ink3); margin-top: .12rem;
+      transition: color .15s, transform .15s;
+    }
+    .doc-link:hover .doc-arrow { color: var(--g600); transform: translateX(3px); }
+
+    /* ═══ CONTRIBUTE ═══ */
+    .contribute-section {
+      background: var(--g900); position: relative; overflow: hidden;
+    }
+    .contribute-section::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(82,183,136,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(82,183,136,.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .contribute-section::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 65% 70% at 15% 50%, rgba(45,106,79,.5) 0%, transparent 70%);
+    }
+    .contribute-inner {
+      max-width: 1160px; margin: 0 auto; padding: 5.5rem 2rem;
+      position: relative; z-index: 1;
+    }
+    .contribute-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+      margin-bottom: 3.5rem;
+    }
+    .contribute-label {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--g400); margin-bottom: .65rem;
+    }
+    .contribute-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700;
+      letter-spacing: -.035em; color: var(--white); line-height: 1.15; margin-bottom: .75rem;
+    }
+    .contribute-title em { font-style: normal; color: var(--g400); }
+    .contribute-sub {
+      font-size: .95rem; color: rgba(149,213,178,.75); max-width: 460px; line-height: 1.7;
+    }
+    .contribute-cta { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .contribute-areas {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .area-card {
+      background: rgba(255,255,255,.05); border: 1px solid rgba(149,213,178,.14);
+      border-radius: var(--radius-lg); padding: 1.6rem;
+      transition: background .2s, border-color .2s, transform .2s;
+    }
+    .area-card:hover {
+      background: rgba(255,255,255,.09); border-color: rgba(149,213,178,.3);
+      transform: translateY(-2px);
+    }
+    .area-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(82,183,136,.15); border: 1px solid rgba(82,183,136,.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--g400); margin-bottom: 1.1rem;
+    }
+    .area-card h3 {
+      font-size: .92rem; font-weight: 700; color: var(--white);
+      margin-bottom: .45rem; letter-spacing: -.015em;
+    }
+    .area-card p { font-size: .81rem; color: rgba(149,213,178,.65); line-height: 1.62; }
+    .area-chip {
+      display: inline-block; margin-top: .9rem;
+      font-size: .67rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      color: var(--g400); background: rgba(82,183,136,.12);
+      border: 1px solid rgba(82,183,136,.2);
+      padding: .22em .65em; border-radius: 5px;
+    }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: var(--g950); border-top: 1px solid rgba(149,213,178,.1);
+    }
+    .footer-inner {
+      max-width: 1160px; margin: 0 auto; padding: 3.5rem 2rem 0;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+    }
+    .footer-brand .logotype {
+      font-size: 1.05rem; font-weight: 700; color: var(--g400);
+      letter-spacing: -.025em; margin-bottom: .3rem;
+    }
+    .footer-brand .domain {
+      font-size: .8rem; color: var(--g600); font-weight: 500; margin-bottom: .5rem;
+    }
+    .footer-brand p {
+      font-size: .79rem; color: rgba(149,213,178,.45);
+      max-width: 240px; line-height: 1.6;
+    }
+    .footer-links { display: flex; gap: 2.75rem; flex-wrap: wrap; }
+    .footer-col h5 {
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(149,213,178,.4); margin-bottom: .75rem;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: .38rem; }
+    .footer-col a {
+      font-size: .8rem; color: rgba(149,213,178,.6);
+      text-decoration: none; transition: color .15s;
+    }
+    .footer-col a:hover { color: var(--g400); }
+    .footer-bottom {
+      max-width: 1160px; margin: 0 auto;
+      padding: 1.75rem 2rem 2.5rem;
+      border-top: 1px solid rgba(149,213,178,.08);
+      margin-top: 2.5rem;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .footer-bottom p { font-size: .74rem; color: rgba(149,213,178,.35); }
+    .footer-badges { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .badge-pill {
+      font-size: .67rem; font-weight: 600; padding: .2em .7em;
+      border-radius: 20px; border: 1px solid rgba(149,213,178,.15);
+      color: rgba(149,213,178,.45); letter-spacing: .03em;
+    }
+
+    /* ═══ LANG ═══ */
+    [data-lang="en"] .zh-text { display: none; }
+    [data-lang="zh"] .en-text { display: none; }
+
+    /* ═══ ANIMATE ═══ */
+    .fade-up {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .hero { padding: 5.5rem 1.25rem 4.5rem; }
+      .formula-box { padding: 1.6rem; }
+      .footer-links { gap: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .contribute-header { flex-direction: column; }
+      .formula-eq { font-size: .8rem; }
+    }
+  </style>
+</head>
+<body data-lang="zh">
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="https://www.linkrsp.com/">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="11" fill="#D8F3DC"/>
+        <circle cx="12" cy="12" r="5" fill="#2D6A4F"/>
+        <path d="M12 9v6M9 12h6" stroke="#D8F3DC" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="#2D6A4F" stroke-width="1.2" stroke-linecap="round" opacity=".45"/>
+      </svg>
+      <span class="logotype">LinkRSP</span>
+      <span class="badge">Alpha</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="docs/whitepaper/linkrsp-whitepaper-v1.0-alpha.md">
+        <span class="zh-text">白皮书</span><span class="en-text">Whitepaper</span>
+      </a></li>
+      <li><a href="docs/spec/linkrsp-core-algorithm-spec-v1.0.md">
+        <span class="zh-text">算法规格</span><span class="en-text">Algorithm</span>
+      </a></li>
+      <li><a href="docs/governance/rule-engine/README.md">
+        <span class="zh-text">规则引擎</span><span class="en-text">Rule Engine</span>
+      </a></li>
+      <li><a href="docs/governance/management-regulations-draft-v1.0-alpha.md">
+        <span class="zh-text">治理制度</span><span class="en-text">Governance</span>
+      </a></li>
+      <li><a href="#contribute">
+        <span class="zh-text">共建</span><span class="en-text">Contribute</span>
+      </a></li>
+      <li><a href="#" class="soon" data-tip="即将开放 · Coming soon">
+        <span class="zh-text">社区</span><span class="en-text">Community</span>
+      </a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a class="nav-gh" href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.52 1.02 1.52 1.02.89 1.52 2.33 1.08 2.9.83.09-.64.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.02-2.68-.1-.25-.44-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.7.11 2.5.33 1.9-1.29 2.74-1.02 2.74-1.02.54 1.37.2 2.39.1 2.64.63.7 1.02 1.59 1.02 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
+        GitHub
+      </a>
+      <div class="lang-pill">
+        <button id="btn-zh" class="active" onclick="setLang('zh')">中文</button>
+        <button id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="pulse"></span>
+      <span class="zh-text">去中心化 · 劳动力互助 · 物理存证</span>
+      <span class="en-text">Decentralized · Labor Mutual-Aid · Physical Attestation</span>
+    </div>
+
+    <h1>
+      <span class="zh-text">生存协议，<em>织网自救</em></span>
+      <span class="en-text">Exchange time,<br><em>link surplus.</em></span>
+    </h1>
+
+    <p class="hero-sub">
+      <span class="zh-text">
+        当自动化系统性替代标准化岗位，人类物理在场依然不可替代。<br>
+        LinkRSP 为可审计的物理劳务建立积分锚定与互助调度语义——<br>
+        一套备用型基础设施，为真实劳动确认坐标。
+      </span>
+      <span class="en-text">
+        When automation displaces standardized roles, human physical presence remains scarce.<br>
+        LinkRSP anchors credit semantics to auditable physical work —<br>
+        backup infrastructure that confirms coordinates for real labor.
+      </span>
+    </p>
+
+    <div class="hero-cta">
+      <a href="docs/whitepaper/linkrsp-whitepaper-v1.0-alpha.md" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="zh-text">阅读白皮书</span><span class="en-text">Read Whitepaper</span>
+      </a>
+      <a href="docs/governance/rule-engine/README.md" class="btn btn-outline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+        <span class="zh-text">规则引擎</span><span class="en-text">Rule Engine</span>
+      </a>
+      <a href="#contribute" class="btn btn-outline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="zh-text">共同建设</span><span class="en-text">Contribute</span>
+      </a>
+    </div>
+
+    <div class="hero-domain">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <a href="https://www.linkrsp.com/" target="_blank" rel="noopener">www.linkrsp.com</a>
+      <span class="dot-sep">·</span>
+      <span class="zh-text">MIT 开源 · 架构阶段</span>
+      <span class="en-text">MIT · Architecture Phase</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ PILLARS ═══ -->
+<section class="pillars">
+  <div class="section-inner">
+    <div class="pillars-header fade-up">
+      <p class="section-label"><span class="zh-text">核心机制</span><span class="en-text">Core Mechanics</span></p>
+      <h2 class="section-title"><span class="zh-text">协议的四个支柱</span><span class="en-text">Four Protocol Pillars</span></h2>
+      <p class="section-desc">
+        <span class="zh-text">每个模块互相约束，构成可审计的完整语义闭环。</span>
+        <span class="en-text">Each module constrains the others, forming a closed auditable semantic loop.</span>
+      </p>
+    </div>
+    <div class="pillars-grid">
+
+      <div class="pillar-card fade-up">
+        <div class="pillar-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3><span class="zh-text">LRS 积分</span><span class="en-text">LRS Credits</span></h3>
+        <p>
+          <span class="zh-text">积分增量 = 物理时长 × 核验强度 × Clip(难度比值, 0.8, 3.0)。积分是权益凭证，不是货币，不由协议托管。</span>
+          <span class="en-text">Credits = T_phy × V_bit × Clip(difficulty ratio, 0.8, 3.0). Credits are rights credentials — not currency, no protocol custody.</span>
+        </p>
+        <span class="pillar-tag">LRS-1.0</span>
+      </div>
+
+      <div class="pillar-card fade-up" style="transition-delay:.07s">
+        <div class="pillar-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3><span class="zh-text">物理存证</span><span class="en-text">Physical Attestation</span></h3>
+        <p>
+          <span class="zh-text">三级核验：V0 声明（0.1）/ V1 BLE+GPS（0.5）/ V2 高保证（1.0）。物理时长是唯一不可虚构的主输入。</span>
+          <span class="en-text">Three tiers: V0 declaration (0.1) / V1 BLE+GPS (0.5) / V2 high-assurance (1.0). Physical duration is the only non-fictional primary input.</span>
+        </p>
+        <span class="pillar-tag">Handshake v1</span>
+      </div>
+
+      <div class="pillar-card fade-up" style="transition-delay:.14s">
+        <div class="pillar-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3><span class="zh-text">双轨社区 S/N Mesh</span><span class="en-text">S/N Mesh Communities</span></h3>
+        <p>
+          <span class="zh-text">N 级（孵化期）默认入口；S 级（运行期）经 IPO 式合规跃迁解锁。1+1 Rule：每 UID 每周期仅关联 1S + 1N 社区。</span>
+          <span class="en-text">N-type (incubation) is the default entry; S-type (operational) unlocked via IPO-style compliance scan. 1+1 Rule: one UID per 1S + 1N per period.</span>
+        </p>
+        <span class="pillar-tag">1+1 Rule</span>
+      </div>
+
+      <div class="pillar-card fade-up" style="transition-delay:.21s">
+        <div class="pillar-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3><span class="zh-text">HDGP 治理审计</span><span class="en-text">HDGP Governance Audit</span></h3>
+        <p>
+          <span class="zh-text">HDGP 作为 meta/审计层：输入侧规则扫描 + 输出侧结算叙事审查。LinkRSP 通过适配器接入，保持模块独立。</span>
+          <span class="en-text">HDGP acts as the meta/audit layer: pre-publication rule scan + post-settlement narrative review. Integration via adapter keeps domain logic isolated.</span>
+        </p>
+        <span class="pillar-tag">HDGP-Core</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ FORMULA ═══ -->
+<section class="formula-section">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label"><span class="zh-text">积分算法</span><span class="en-text">Credit Algorithm</span></p>
+      <h2 class="section-title"><span class="zh-text">LRS-1.0 核心公式</span><span class="en-text">LRS-1.0 Core Formula</span></h2>
+      <p class="section-desc">
+        <span class="zh-text">所有积分增量须通过以下公式计算，参数受治理约束，不作随意租户级调整。</span>
+        <span class="en-text">All credit increments must be computed via this formula. Parameters are governance-constrained — no per-tenant overrides.</span>
+      </p>
+    </div>
+    <div class="formula-box fade-up">
+      <div class="formula-eq">Credits_delta = (<span class="hl">T_phy</span> × <span class="hl">V_bit</span>) × Clip((<span class="hl">D_base</span> + Σ<span class="hl">W_risk</span>) / <span class="hl">K_global</span>,&nbsp;<span class="hl">0.8</span>,&nbsp;<span class="hl">3.0</span>)</div>
+      <table class="formula-table">
+        <thead>
+          <tr>
+            <th><span class="zh-text">变量</span><span class="en-text">Symbol</span></th>
+            <th><span class="zh-text">含义</span><span class="en-text">Meaning</span></th>
+            <th><span class="zh-text">约束</span><span class="en-text">Constraint</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>T_phy</td>
+            <td><span class="zh-text">物理时长（分钟）</span><span class="en-text">Physical duration in minutes</span></td>
+            <td><span class="zh-text">唯一不可虚构主输入</span><span class="en-text">Primary non-fictional input</span></td>
+          </tr>
+          <tr>
+            <td>V_bit</td>
+            <td><span class="zh-text">核验强度权重</span><span class="en-text">Attestation tier weight</span></td>
+            <td>V0 = 0.1 · V1 = 0.5 · V2 = 1.0</td>
+          </tr>
+          <tr>
+            <td>D_base</td>
+            <td><span class="zh-text">基准难度</span><span class="en-text">Baseline difficulty</span></td>
+            <td><span class="zh-text">LRS-1.0 冻结为 1.0</span><span class="en-text">Frozen at 1.0 for LRS-1.0</span></td>
+          </tr>
+          <tr>
+            <td>ΣW_risk</td>
+            <td><span class="zh-text">风险系数累加</span><span class="en-text">Summed risk weights</span></td>
+            <td><span class="zh-text">从 HDGP 原子劳务库选取并审计</span><span class="en-text">From HDGP atomic labor library; audited</span></td>
+          </tr>
+          <tr>
+            <td>K_global</td>
+            <td><span class="zh-text">全网归一化常数</span><span class="en-text">Network normalization constant</span></td>
+            <td><span class="zh-text">创世期 = 1.0；首 1000 S 任务或 90 天后渐变</span><span class="en-text">Genesis = 1.0; progressive damping after min(1000 S-tasks, 90d)</span></td>
+          </tr>
+          <tr>
+            <td>Clip(x,&nbsp;0.8,&nbsp;3.0)</td>
+            <td><span class="zh-text">上下界截断</span><span class="en-text">Bounded clipping</span></td>
+            <td><span class="zh-text">0.8 = 尊严底价；3.0 = 高风险溢价上限</span><span class="en-text">0.8 = dignity floor; 3.0 = anti-arbitrage cap</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="formula-note">
+        <span class="zh-text">⚠ 积分不是货币，不构成法币兑付承诺。法币结算由双方在协议外自行约定，协议不作托管。</span>
+        <span class="en-text">⚠ Credits are not currency and carry no fiat redemption guarantee. Cash settlement is off-protocol — no protocol custody.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ GOVERNANCE ═══ -->
+<section class="gov-section">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label"><span class="zh-text">管理制度</span><span class="en-text">Management Principles</span></p>
+      <h2 class="section-title"><span class="zh-text">协议如何治理</span><span class="en-text">How the Protocol Governs</span></h2>
+      <p class="section-desc">
+        <span class="zh-text">管理目标不是控制人，而是维护协议履行的公正性。制度以尽量少的干预，保持最大限度的自治。</span>
+        <span class="en-text">The goal is not to control people, but to maintain the integrity of protocol execution — minimal intervention, maximum self-governance.</span>
+      </p>
+    </div>
+
+    <div class="gov-layout fade-up">
+      <div class="gov-quote">
+        <blockquote>
+          <span class="zh-text">我们不管理「人」，<br>我们只管理「协议的履行」。</span>
+          <span class="en-text">We do not govern people.<br>We govern the execution of the protocol.</span>
+        </blockquote>
+        <div class="quote-en">
+          <span class="zh-text">linkrsp 的管理不以行政控制为目的，而是为了维护物理规则的公正性。</span>
+          <span class="en-text">LinkRSP governance exists not for administrative control, but to maintain the fairness of physical rules.</span>
+        </div>
+        <p class="gov-quote-attr">
+          — <span class="zh-text">架构师声明 ·</span><span class="en-text">Architect Statement ·</span>
+          <a href="docs/governance/management-regulations-draft-v1.0-alpha.md">
+            <span class="zh-text">管理制度草案 v1.0 Alpha</span><span class="en-text">Management Regs v1.0 Alpha</span>
+          </a>
+        </p>
+      </div>
+
+      <div class="gov-rules">
+
+        <div class="gov-rule">
+          <div class="gov-rule-num">①</div>
+          <div class="gov-rule-body">
+            <h4><span class="zh-text">1+1 双轨约束</span><span class="en-text">1+1 Dual-Track Constraint</span></h4>
+            <p>
+              <span class="zh-text">每个 UID 每周期仅允许关联 1 个 S 级（强任务）社区 + 1 个 N 级社区。防止精力稀释与信用投机，保持在生存层的专注与责任。</span>
+              <span class="en-text">Each UID may associate with 1 S-type (hard-task) + 1 N-type community per period — preventing effort dilution and credit speculation.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="gov-rule">
+          <div class="gov-rule-num">②</div>
+          <div class="gov-rule-body">
+            <h4><span class="zh-text">社区 IPO 跃迁</span><span class="en-text">Community IPO Transition</span></h4>
+            <p>
+              <span class="zh-text">N 级（孵化期）升至 S 级（运行期）须通过：成员基数与存证任务量硬门槛 + HDGP 伦理合规扫描 + Judge 板块公示与共识校验。</span>
+              <span class="en-text">N → S transition requires: member/task hard thresholds + HDGP ethical scan + Judge board public review and consensus verification.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="gov-rule">
+          <div class="gov-rule-num">③</div>
+          <div class="gov-rule-body">
+            <h4><span class="zh-text">金钱交易不干预</span><span class="en-text">Economic Non-Interference</span></h4>
+            <p>
+              <span class="zh-text">协议不干预用户间法币交易，允许双方自主商定报酬。LinkRSP 不提供资金托管与担保；现金层风险由用户自行承担。</span>
+              <span class="en-text">The protocol does not intervene in fiat transactions between users. No custodial services — cash-layer risk is borne by parties directly.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="gov-rule">
+          <div class="gov-rule-num">④</div>
+          <div class="gov-rule-body">
+            <h4><span class="zh-text">动态熔断与红线惩罚</span><span class="en-text">Circuit Breaker & Red-Line Penalty</span></h4>
+            <p>
+              <span class="zh-text">网关监测虚假任务或数据通胀时自动锁定账户。S 级社区触碰 HDGP 伦理红线则强制降级至 N 级，并公开标记发起人信用记录。</span>
+              <span class="en-text">Gateway auto-locks on fake tasks or data inflation. S-type communities that breach HDGP ethical red lines are forced back to N-type with public credit flagging.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="gov-rule">
+          <div class="gov-rule-num">⑤</div>
+          <div class="gov-rule-body">
+            <h4><span class="zh-text">规则透明 · 可预期</span><span class="en-text">Rule Transparency & Predictability</span></h4>
+            <p>
+              <span class="zh-text">社区「宪章」（自治规则）通过 Judge 板块公示后对成员生效；重大修订须重新公示。成员对其生存环境有权可预期。</span>
+              <span class="en-text">Community charters take effect after Judge board publication; major amendments require re-publication. Members have a right to predictable conditions.</span>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ PHASES ═══ -->
+<section class="phases-section">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label"><span class="zh-text">实施路线图</span><span class="en-text">Implementation Roadmap</span></p>
+      <h2 class="section-title"><span class="zh-text">分阶段交付</span><span class="en-text">Phased Delivery</span></h2>
+      <p class="section-desc">
+        <span class="zh-text">成本递延策略：每阶段设有明确前置条件，不抢跑，不烧钱。</span>
+        <span class="en-text">Cost postponement strategy: each phase has clear gate conditions — no premature execution, no wasted spend.</span>
+      </p>
+    </div>
+    <div class="phases-grid">
+
+      <div class="phase-item fade-up">
+        <div class="phase-dot done">✓</div>
+        <div class="phase-body">
+          <span class="phase-label done"><span class="zh-text">已完成</span><span class="en-text">Done</span></span>
+          <h4><span class="zh-text">Phase A — 规范 & 治理基础</span><span class="en-text">Phase A — Specs & Governance</span></h4>
+          <p><span class="zh-text">28 条规则 YAML、审计事件模式、时间窗口约定、算法规格、实施计划、管理制度草案。</span><span class="en-text">28 rule YAMLs, audit event schema, time conventions, algorithm spec, implementation plan, management regs.</span></p>
+        </div>
+      </div>
+
+      <div class="phase-item fade-up" style="transition-delay:.07s">
+        <div class="phase-dot next">B</div>
+        <div class="phase-body">
+          <span class="phase-label next"><span class="zh-text">下一步</span><span class="en-text">Next</span></span>
+          <h4><span class="zh-text">Phase B — R 类规则 MVP</span><span class="en-text">Phase B — R-Class Rules MVP</span></h4>
+          <p><span class="zh-text">Go + PostgreSQL 实现 R-001 ~ R-010 确定性规则；完整审计事件输出。前置：1 名 Go 工程师可用。</span><span class="en-text">Go + PostgreSQL for R-001–R-010 deterministic rules; full audit event output. Gate: 1 Go engineer available.</span></p>
+        </div>
+      </div>
+
+      <div class="phase-item fade-up" style="transition-delay:.14s">
+        <div class="phase-dot later">C</div>
+        <div class="phase-body">
+          <span class="phase-label later"><span class="zh-text">排队中</span><span class="en-text">Queued</span></span>
+          <h4><span class="zh-text">Phase C — 账本 & 结算</span><span class="en-text">Phase C — Ledger & Settlement</span></h4>
+          <p><span class="zh-text">只追加事件账本；结算预览 / 提交 API；需两名真实用户参与闭环验证。</span><span class="en-text">Append-only event ledger; settlement preview/commit API; requires 2 real users for closed-loop trial.</span></p>
+        </div>
+      </div>
+
+      <div class="phase-item fade-up" style="transition-delay:.21s">
+        <div class="phase-dot later">D</div>
+        <div class="phase-body">
+          <span class="phase-label later"><span class="zh-text">排队中</span><span class="en-text">Queued</span></span>
+          <h4><span class="zh-text">Phase D — S 类规则（无 LLM）</span><span class="en-text">Phase D — S-Class "No LLM" Mode</span></h4>
+          <p><span class="zh-text">Postgres 队列 + 触发词预筛 + 人工审核；每周 50–200 条处理容量。</span><span class="en-text">Postgres queue + trigger-word screening + human review; 50–200 items/week capacity.</span></p>
+        </div>
+      </div>
+
+      <div class="phase-item fade-up" style="transition-delay:.28s">
+        <div class="phase-dot later">E</div>
+        <div class="phase-body">
+          <span class="phase-label later"><span class="zh-text">成本门控</span><span class="en-text">Cost-Gated</span></span>
+          <h4><span class="zh-text">Phase E — LLM 批处理集成</span><span class="en-text">Phase E — LLM Batch Integration</span></h4>
+          <p><span class="zh-text">S 类规则 LLM Oracle；需稳定预算 + few-shot 校准样本 + 隐私策略。</span><span class="en-text">LLM Oracle for S-class rules; requires stable budget, few-shot calibration samples, privacy strategy.</span></p>
+        </div>
+      </div>
+
+      <div class="phase-item fade-up" style="transition-delay:.35s">
+        <div class="phase-dot later">F</div>
+        <div class="phase-body">
+          <span class="phase-label later"><span class="zh-text">延后</span><span class="en-text">Deferred</span></span>
+          <h4><span class="zh-text">Phase F — HDGP Engine 接入</span><span class="en-text">Phase F — HDGP Engine Integration</span></h4>
+          <p><span class="zh-text">LinkRSP 审计事件 → HDGP Rule Engine 适配器；需接口合约冻结后启动。</span><span class="en-text">LinkRSP audit events → HDGP adapter; starts after interface contract is frozen.</span></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ DOCS ═══ -->
+<section class="docs-section">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label"><span class="zh-text">文档索引</span><span class="en-text">Document Index</span></p>
+      <h2 class="section-title"><span class="zh-text">关键规范文档</span><span class="en-text">Key Specifications</span></h2>
+      <p class="section-desc">
+        <span class="zh-text">所有规范文档均为 v1.0 冻结状态，变更须经治理修订流程。</span>
+        <span class="en-text">All specification documents are frozen at v1.0. Changes require a governed revision process.</span>
+      </p>
+    </div>
+    <div class="docs-grid">
+
+      <a href="docs/whitepaper/linkrsp-whitepaper-v1.0-alpha.md" class="doc-link fade-up">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">白皮书 v1.0 Alpha</span><span class="en-text">Whitepaper v1.0 Alpha</span></strong>
+          <span><span class="zh-text">协议叙事、定位、核心机制与治理框架</span><span class="en-text">Full protocol narrative, positioning, core mechanics, governance</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/spec/linkrsp-core-algorithm-spec-v1.0.md" class="doc-link fade-up" style="transition-delay:.05s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">核心算法规格 v1.0</span><span class="en-text">Core Algorithm Spec v1.0</span></strong>
+          <span><span class="zh-text">LRS-1.0 公式、创世锁定、Harness 与 V-Decay</span><span class="en-text">LRS-1.0 formula, genesis lock, Harness, V-Decay</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/governance/management-regulations-draft-v1.0-alpha.md" class="doc-link fade-up" style="transition-delay:.1s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">管理制度草案 v1.0 Alpha</span><span class="en-text">Management Regs v1.0 Alpha</span></strong>
+          <span><span class="zh-text">1+1 约束、IPO 跃迁、熔断、规则透明五项原则</span><span class="en-text">1+1 constraint, IPO transition, circuit breaker, rule transparency</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/governance/rule-engine/README.md" class="doc-link fade-up" style="transition-delay:.15s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2M2 12h2m16 0h2"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">规则引擎 README</span><span class="en-text">Rule Engine README</span></strong>
+          <span><span class="zh-text">28 条规则（R + S + 混合）YAML 模式说明</span><span class="en-text">28 rules (R-class + S-class + mixed) YAML schema guide</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/spec/audit-event-schema-v1.0.md" class="doc-link fade-up" style="transition-delay:.2s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">审计事件模式 v1.0</span><span class="en-text">Audit Event Schema v1.0</span></strong>
+          <span><span class="zh-text">9 节 JSON 结构、幂等键、跨社区规则字段</span><span class="en-text">9-section JSON, idempotency key, cross-community fields</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/spec/time-and-window-conventions-v1.0.md" class="doc-link fade-up" style="transition-delay:.25s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">时间窗口约定 v1.0</span><span class="en-text">Time & Window Conventions v1.0</span></strong>
+          <span><span class="zh-text">所有时间边界锁定至秒级精度，UTC-only</span><span class="en-text">All temporal boundaries locked to second precision, UTC-only</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/engineering/implementation-plan-v1.0.md" class="doc-link fade-up" style="transition-delay:.3s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">实施计划 v1.0</span><span class="en-text">Implementation Plan v1.0</span></strong>
+          <span><span class="zh-text">A–G 七阶段、前置条件、成本递延策略</span><span class="en-text">Phases A–G, gate conditions, cost postponement strategy</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/reports/feasibility-assessment-v1.0-alpha.md" class="doc-link fade-up" style="transition-delay:.35s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">可行性评估 v1.0 Alpha</span><span class="en-text">Feasibility Assessment v1.0 Alpha</span></strong>
+          <span><span class="zh-text">32 条执行轨道 / 28 唯一规则 ID 的来源与分析</span><span class="en-text">Source analysis for 32 tracks / 28 unique rule IDs</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTRIBUTE ═══ -->
+<section class="contribute-section" id="contribute">
+  <div class="contribute-inner">
+    <div class="contribute-header">
+      <div>
+        <p class="contribute-label"><span class="zh-text">开放共建</span><span class="en-text">Open Contribution</span></p>
+        <h2 class="contribute-title">
+          <span class="zh-text">共同建设<br><em>LinkRSP</em></span>
+          <span class="en-text">Build <em>LinkRSP</em><br>Together</span>
+        </h2>
+        <p class="contribute-sub">
+          <span class="zh-text">我们处于架构阶段，规格已冻结，代码刚刚启动。如果你相信真实劳动应当被可审计地记录，欢迎加入建设。</span>
+          <span class="en-text">We're in the architecture phase — specs frozen, code just starting. If you believe real labor deserves auditable recognition, come build with us.</span>
+        </p>
+        <div class="contribute-cta">
+          <a href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener" class="btn btn-ghost">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.52 1.02 1.52 1.02.89 1.52 2.33 1.08 2.9.83.09-.64.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.02-2.68-.1-.25-.44-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.7.11 2.5.33 1.9-1.29 2.74-1.02 2.74-1.02.54 1.37.2 2.39.1 2.64.63.7 1.02 1.59 1.02 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
+            <span class="zh-text">HDGP-Core GitHub</span><span class="en-text">HDGP-Core GitHub</span>
+          </a>
+          <a href="mailto:yvaine.he83@gmail.com" class="btn btn-ghost">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span class="zh-text">联系创始人</span><span class="en-text">Contact Founder</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="contribute-areas">
+
+      <div class="area-card fade-up">
+        <div class="area-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3><span class="zh-text">Go 工程师</span><span class="en-text">Go Engineers</span></h3>
+        <p>
+          <span class="zh-text">Phase B 入口：实现 R-001 ~ R-010 确定性规则，Go + PostgreSQL，只追加事件账本。规格已冻结，可直接上手。</span>
+          <span class="en-text">Phase B entry: implement R-001–R-010 deterministic rules in Go + PostgreSQL with append-only event ledger. Specs frozen — ready to code.</span>
+        </p>
+        <span class="area-chip"><span class="zh-text">最急需</span><span class="en-text">Most Needed</span></span>
+      </div>
+
+      <div class="area-card fade-up" style="transition-delay:.08s">
+        <div class="area-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+        </div>
+        <h3><span class="zh-text">规则引擎贡献</span><span class="en-text">Rule Engine Extension</span></h3>
+        <p>
+          <span class="zh-text">帮助扩展至 30–50 条规则（当前 28 条）。编写新规则 YAML、few-shot 示例、false positive 场景分析。</span>
+          <span class="en-text">Help expand from 28 to 30–50 rules. Write new rule YAMLs, few-shot examples, and false-positive scenario analysis.</span>
+        </p>
+        <span class="area-chip">YAML · LLM</span>
+      </div>
+
+      <div class="area-card fade-up" style="transition-delay:.16s">
+        <div class="area-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3><span class="zh-text">红队 & 压测</span><span class="en-text">Red-Team & Stress Testing</span></h3>
+        <p>
+          <span class="zh-text">尝试欺骗规则引擎、构造极端边界案例，撰写红队报告。发现漏洞有助于提前修补协议盲区。</span>
+          <span class="en-text">Attempt to fool the rule engine, construct edge cases, and write red-team reports. Findings help patch protocol blind spots before launch.</span>
+        </p>
+        <span class="area-chip"><span class="zh-text">安全研究</span><span class="en-text">Security Research</span></span>
+      </div>
+
+      <div class="area-card fade-up" style="transition-delay:.24s">
+        <div class="area-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3><span class="zh-text">翻译 & 文档</span><span class="en-text">Translation & Docs</span></h3>
+        <p>
+          <span class="zh-text">将核心规格翻译为英文（部分已有双语），或协助整理文档结构。让协议对更广泛社区可读。</span>
+          <span class="en-text">Translate core specs to English (some already bilingual), or help organize doc structure — making the protocol readable to a wider community.</span>
+        </p>
+        <span class="area-chip">MIT · Open</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logotype">LinkRSP</div>
+      <div class="domain">www.linkrsp.com</div>
+      <p>
+        <span class="zh-text">Link Reshuffling & Survival Protocol<br>劳动力再平衡与生存韧性协议<br>MIT 开源 · HDGP 治理</span>
+        <span class="en-text">Link Reshuffling & Survival Protocol<br>Decentralized labor mutual-aid protocol<br>MIT licensed · HDGP governed</span>
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <h5><span class="zh-text">规范</span><span class="en-text">Specs</span></h5>
+        <ul>
+          <li><a href="docs/spec/linkrsp-core-algorithm-spec-v1.0.md"><span class="zh-text">算法规格</span><span class="en-text">Algorithm Spec</span></a></li>
+          <li><a href="docs/spec/audit-event-schema-v1.0.md"><span class="zh-text">审计事件模式</span><span class="en-text">Audit Event Schema</span></a></li>
+          <li><a href="docs/spec/openapi-v1.0-draft.md"><span class="zh-text">API 草案</span><span class="en-text">API Draft</span></a></li>
+          <li><a href="docs/spec/time-and-window-conventions-v1.0.md"><span class="zh-text">时间约定</span><span class="en-text">Time Conventions</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5><span class="zh-text">治理</span><span class="en-text">Governance</span></h5>
+        <ul>
+          <li><a href="docs/governance/management-regulations-draft-v1.0-alpha.md"><span class="zh-text">管理制度草案</span><span class="en-text">Management Regs</span></a></li>
+          <li><a href="docs/governance/rule-engine/README.md"><span class="zh-text">规则引擎</span><span class="en-text">Rule Engine</span></a></li>
+          <li><a href="docs/governance/appeals-and-public-record.md"><span class="zh-text">申诉与公开记录</span><span class="en-text">Appeals & Records</span></a></li>
+          <li><a href="docs/operations/appeal-log.md"><span class="zh-text">申诉日志</span><span class="en-text">Appeal Log</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5><span class="zh-text">工程</span><span class="en-text">Engineering</span></h5>
+        <ul>
+          <li><a href="docs/engineering/implementation-plan-v1.0.md"><span class="zh-text">实施计划</span><span class="en-text">Implementation Plan</span></a></li>
+          <li><a href="docs/engineering/architecture-v0.1.md"><span class="zh-text">架构草案</span><span class="en-text">Architecture Draft</span></a></li>
+          <li><a href="docs/engineering/technology-strategy-v1.0.md"><span class="zh-text">技术策略</span><span class="en-text">Tech Strategy</span></a></li>
+          <li><a href="docs/db/schema-v1.0-draft.md"><span class="zh-text">数据库模式草案</span><span class="en-text">DB Schema Draft</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5><span class="zh-text">外部</span><span class="en-text">External</span></h5>
+        <ul>
+          <li><a href="https://hdgp-protocol.com" target="_blank" rel="noopener">hdgp-protocol.com</a></li>
+          <li><a href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener">HDGP-Core</a></li>
+          <li><a href="mailto:yvaine.he83@gmail.com">yvaine.he83@gmail.com</a></li>
+          <li><a href="LICENSE">MIT License</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>
+      <span class="zh-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · 架构阶段，尚无代码上线</span>
+      <span class="en-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Architecture phase — no production code yet</span>
+    </p>
+    <div class="footer-badges">
+      <span class="badge-pill">MIT</span>
+      <span class="badge-pill">Go</span>
+      <span class="badge-pill">PostgreSQL</span>
+      <span class="badge-pill">HDGP</span>
+      <span class="badge-pill">v1.0-alpha</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.dataset.lang = lang;
+    document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
