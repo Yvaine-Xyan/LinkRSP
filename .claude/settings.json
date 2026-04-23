@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(make *)",
+      "Bash(go *)",
+      "Bash(py *)",
+      "Bash(pip *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(mkdir *)",
+      "Bash(head *)",
+      "Bash(wc *)",
+      "Bash(echo *)",
+      "Bash(which *)",
+      "Bash(true)",
+      "Bash(yamllint *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=${CLAUDE_TOOL_INPUT_FILE_PATH:-}; case \"$FILE\" in *rule-engine*.yaml) echo \"[rule-lint] $FILE modified — run /rule-lint to validate.\";; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=${CLAUDE_TOOL_INPUT_FILE_PATH:-}; case \"$FILE\" in *.go) which go >/dev/null 2>&1 && go fmt \"$FILE\" 2>/dev/null || true;; esac"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "echo ''; echo '═══ LinkRSP Session End ═══'; git -C \"${CLAUDE_PROJECT_DIR:-.}\" status --short 2>/dev/null | head -10; echo 'Tip: /pre-commit before next push.'"
+      }
+    ]
+  }
+}

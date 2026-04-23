@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [
+    { "pattern": "^https://hdgp-protocol.com" },
+    { "pattern": "^https://www.linkrsp.com" }
+  ],
+  "aliveStatusCodes": [200, 206],
+  "httpHeaders": [
+    {
+      "urls": ["https://github.com"],
+      "headers": { "Accept": "text/html" }
+    }
+  ]
+}

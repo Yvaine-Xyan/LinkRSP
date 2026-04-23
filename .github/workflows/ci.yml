@@ -1,0 +1,185 @@
+name: LinkRSP CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Phase A: Rule YAML validation + spec document checks
+  # Always runs — no Go code required
+  # ─────────────────────────────────────────────────────────────────
+  rule-validate:
+    name: Validate Rule YAMLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate all rule YAMLs
+        run: python3 .claude/scripts/validate_rule.py --all
+
+      - name: Check rule count
+        run: |
+          count=$(find docs/governance/rule-engine -name "*.yaml" | wc -l)
+          echo "Rule YAML count: $count"
+          if [ "$count" -lt 28 ]; then
+            echo "ERROR: Expected ≥28 rule YAMLs, found $count"
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────────────────────
+  # Markdown link check — verify internal doc links are not broken
+  # ─────────────────────────────────────────────────────────────────
+  doc-links:
+    name: Check Markdown Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check internal markdown links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "no"
+          config-file: ".github/mlc-config.json"
+          folder-path: "docs"
+
+  # ─────────────────────────────────────────────────────────────────
+  # YAML lint — general YAML syntax check for all YAML files
+  # ─────────────────────────────────────────────────────────────────
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 200}}}" \
+            docs/governance/rule-engine/
+
+  # ─────────────────────────────────────────────────────────────────
+  # Phase B+: Go build, vet, test
+  # Skipped automatically if no Go module exists yet
+  # ─────────────────────────────────────────────────────────────────
+  go-check:
+    name: Go Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if Go module exists
+        id: go-exists
+        run: |
+          if [ -f go.mod ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "No go.mod found — skipping Go checks (Phase B not started)"
+          fi
+
+      - name: Set up Go
+        if: steps.go-exists.outputs.exists == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: go vet
+        if: steps.go-exists.outputs.exists == 'true'
+        run: go vet ./...
+
+      - name: go build
+        if: steps.go-exists.outputs.exists == 'true'
+        run: go build ./...
+
+      - name: go test
+        if: steps.go-exists.outputs.exists == 'true'
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Upload coverage
+        if: steps.go-exists.outputs.exists == 'true'
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.out
+          fail_ci_if_error: false
+
+  # ─────────────────────────────────────────────────────────────────
+  # Phase B+: golangci-lint (strict)
+  # ─────────────────────────────────────────────────────────────────
+  go-lint:
+    name: Go Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if Go module exists
+        id: go-exists
+        run: |
+          if [ -f go.mod ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Go
+        if: steps.go-exists.outputs.exists == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: golangci-lint
+        if: steps.go-exists.outputs.exists == 'true'
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout 5m
+
+  # ─────────────────────────────────────────────────────────────────
+  # Security scan — static analysis
+  # ─────────────────────────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if Go module exists
+        id: go-exists
+        run: |
+          if [ -f go.mod ]; then echo "exists=true" >> $GITHUB_OUTPUT
+          else echo "exists=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Set up Go
+        if: steps.go-exists.outputs.exists == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Run govulncheck
+        if: steps.go-exists.outputs.exists == 'true'
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Scan for hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
