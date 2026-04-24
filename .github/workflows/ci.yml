@@ -95,7 +95,7 @@ jobs:
         if: steps.go-exists.outputs.exists == 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version-file: "go.mod"
           cache: true
 
       - name: go vet
@@ -139,7 +139,7 @@ jobs:
         if: steps.go-exists.outputs.exists == 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version-file: "go.mod"
           cache: true
 
       - name: golangci-lint
@@ -168,7 +168,7 @@ jobs:
         if: steps.go-exists.outputs.exists == 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version-file: "go.mod"
 
       - name: Run govulncheck
         if: steps.go-exists.outputs.exists == 'true'
