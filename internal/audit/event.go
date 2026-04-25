@@ -73,25 +73,44 @@ type Action struct {
 
 // Builder constructs an audit Event for a single rule execution.
 type Builder struct {
-	rule     RuleRef
-	trigger  string
-	traceID  string
+	rule           RuleRef
+	trigger        string
+	traceID        string
+	configSeverity string // rule's configured severity: block | warn | flag
 }
 
 func NewBuilder(ruleID, category, trigger string) *Builder {
 	return &Builder{
-		rule:    RuleRef{RuleID: ruleID, Version: "1.0", Category: category},
-		trigger: trigger,
-		traceID: uuid.New().String(),
+		rule:           RuleRef{RuleID: ruleID, Version: "1.0", Category: category},
+		trigger:        trigger,
+		traceID:        uuid.New().String(),
+		configSeverity: "block",
 	}
+}
+
+// WithSeverity sets the rule's configured severity (block/warn/flag).
+// Used by WARN and FLAG rules so PASS events record the correct severity level.
+func (b *Builder) WithSeverity(s string) *Builder {
+	b.configSeverity = s
+	return b
 }
 
 func (b *Builder) BuildBlock(subjectType, subjectID string, secondaryID *string, matchedPattern string, notified []string) Event {
 	return b.build(VerdictBlock, "block", true, subjectType, subjectID, secondaryID, &matchedPattern, notified)
 }
 
+// BuildWarn produces a FLAG verdict with severity "warn" (flags for review, does not block).
+func (b *Builder) BuildWarn(subjectType, subjectID string, matchedPattern string, notified []string) Event {
+	return b.build(VerdictFlag, "warn", false, subjectType, subjectID, nil, &matchedPattern, notified)
+}
+
+// BuildFlag produces a FLAG verdict with severity "flag".
+func (b *Builder) BuildFlag(subjectType, subjectID string, matchedPattern string, notified []string) Event {
+	return b.build(VerdictFlag, "flag", false, subjectType, subjectID, nil, &matchedPattern, notified)
+}
+
 func (b *Builder) BuildPass(subjectType, subjectID string) Event {
-	return b.build(VerdictPass, "block", false, subjectType, subjectID, nil, nil, nil)
+	return b.build(VerdictPass, b.configSeverity, false, subjectType, subjectID, nil, nil, nil)
 }
 
 func (b *Builder) build(verdict Verdict, severity string, autoActioned bool,
