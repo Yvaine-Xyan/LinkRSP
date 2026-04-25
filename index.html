@@ -389,8 +389,13 @@
       padding: .15em .5em; border-radius: 4px; margin-bottom: .3rem;
     }
     .phase-label.done { color: var(--g600); background: var(--g100); }
+    .phase-label.active { color: #065f46; background: #d1fae5; }
     .phase-label.next { color: #92400e; background: #fef3c7; }
     .phase-label.later { color: var(--ink3); background: #edf1ed; }
+    .phase-dot.active {
+      background: var(--g500); color: var(--white);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
 
     /* ═══ DOCS ═══ */
     .docs-section { background: var(--white); }
@@ -607,7 +612,7 @@
     </ul>
 
     <div class="nav-right">
-      <a class="nav-gh" href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener">
+      <a class="nav-gh" href="https://github.com/Yvaine-Xyan/LinkRSP" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.52 1.02 1.52 1.02.89 1.52 2.33 1.08 2.9.83.09-.64.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.02-2.68-.1-.25-.44-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.7.11 2.5.33 1.9-1.29 2.74-1.02 2.74-1.02.54 1.37.2 2.39.1 2.64.63.7 1.02 1.59 1.02 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
         GitHub
       </a>
@@ -665,8 +670,8 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <a href="https://www.linkrsp.com/" target="_blank" rel="noopener">www.linkrsp.com</a>
       <span class="dot-sep">·</span>
-      <span class="zh-text">MIT 开源 · 架构阶段</span>
-      <span class="en-text">MIT · Architecture Phase</span>
+      <span class="zh-text">MIT 开源 · Phase B 开发中</span>
+      <span class="en-text">MIT · Phase B Active</span>
     </div>
   </div>
 </section>
@@ -921,11 +926,11 @@
       </div>
 
       <div class="phase-item fade-up" style="transition-delay:.07s">
-        <div class="phase-dot next">B</div>
+        <div class="phase-dot active">B</div>
         <div class="phase-body">
-          <span class="phase-label next"><span class="zh-text">下一步</span><span class="en-text">Next</span></span>
+          <span class="phase-label active"><span class="zh-text">进行中</span><span class="en-text">In Progress</span></span>
           <h4><span class="zh-text">Phase B — R 类规则 MVP</span><span class="en-text">Phase B — R-Class Rules MVP</span></h4>
-          <p><span class="zh-text">Go + PostgreSQL 实现 R-001 ~ R-010 确定性规则；完整审计事件输出。前置：1 名 Go 工程师可用。</span><span class="en-text">Go + PostgreSQL for R-001–R-010 deterministic rules; full audit event output. Gate: 1 Go engineer available.</span></p>
+          <p><span class="zh-text">Go + PostgreSQL 实现 R-001 ~ R-010 确定性规则；审计事件全输出。R-001 物理悖论检测已上线，欢迎 Go 工程师共建剩余规则。</span><span class="en-text">Go + PostgreSQL for R-001–R-010 deterministic rules; full audit event output. R-001 physical paradox detection live — Go engineers welcome to co-build the remaining rules.</span></p>
         </div>
       </div>
 
@@ -1075,9 +1080,13 @@
           <span class="en-text">We're in the architecture phase — specs frozen, code just starting. If you believe real labor deserves auditable recognition, come build with us.</span>
         </p>
         <div class="contribute-cta">
+          <a href="https://github.com/Yvaine-Xyan/LinkRSP" target="_blank" rel="noopener" class="btn btn-ghost">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.52 1.02 1.52 1.02.89 1.52 2.33 1.08 2.9.83.09-.64.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.02-2.68-.1-.25-.44-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.7.11 2.5.33 1.9-1.29 2.74-1.02 2.74-1.02.54 1.37.2 2.39.1 2.64.63.7 1.02 1.59 1.02 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
+            <span class="zh-text">LinkRSP GitHub</span><span class="en-text">LinkRSP GitHub</span>
+          </a>
           <a href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener" class="btn btn-ghost">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.52 1.02 1.52 1.02.89 1.52 2.33 1.08 2.9.83.09-.64.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.02-2.68-.1-.25-.44-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.7.11 2.5.33 1.9-1.29 2.74-1.02 2.74-1.02.54 1.37.2 2.39.1 2.64.63.7 1.02 1.59 1.02 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
-            <span class="zh-text">HDGP-Core GitHub</span><span class="en-text">HDGP-Core GitHub</span>
+            <span class="zh-text">HDGP-Core</span><span class="en-text">HDGP-Core</span>
           </a>
           <a href="mailto:yvaine.he83@gmail.com" class="btn btn-ghost">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -1095,8 +1104,8 @@
         </div>
         <h3><span class="zh-text">Go 工程师</span><span class="en-text">Go Engineers</span></h3>
         <p>
-          <span class="zh-text">Phase B 入口：实现 R-001 ~ R-010 确定性规则，Go + PostgreSQL，只追加事件账本。规格已冻结，可直接上手。</span>
-          <span class="en-text">Phase B entry: implement R-001–R-010 deterministic rules in Go + PostgreSQL with append-only event ledger. Specs frozen — ready to code.</span>
+          <span class="zh-text">Phase B 进行中：R-001 物理悖论检测已实现，R-002 ~ R-010 待共建。Go + PostgreSQL，只追加事件账本，规格已冻结，可直接开始。</span>
+          <span class="en-text">Phase B active: R-001 physical paradox detection done; R-002–R-010 open for co-build. Go + PostgreSQL, append-only ledger, specs frozen — start now.</span>
         </p>
         <span class="area-chip"><span class="zh-text">最急需</span><span class="en-text">Most Needed</span></span>
       </div>
@@ -1184,6 +1193,7 @@
       <div class="footer-col">
         <h5><span class="zh-text">外部</span><span class="en-text">External</span></h5>
         <ul>
+          <li><a href="https://github.com/Yvaine-Xyan/LinkRSP" target="_blank" rel="noopener">LinkRSP GitHub</a></li>
           <li><a href="https://hdgp-protocol.com" target="_blank" rel="noopener">hdgp-protocol.com</a></li>
           <li><a href="https://github.com/HumanDignityGuardian/HDGP-Core" target="_blank" rel="noopener">HDGP-Core</a></li>
           <li><a href="mailto:yvaine.he83@gmail.com">yvaine.he83@gmail.com</a></li>
@@ -1195,8 +1205,8 @@
 
   <div class="footer-bottom">
     <p>
-      <span class="zh-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · 架构阶段，尚无代码上线</span>
-      <span class="en-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Architecture phase — no production code yet</span>
+      <span class="zh-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B 开发中</span>
+      <span class="en-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B in development</span>
     </p>
     <div class="footer-badges">
       <span class="badge-pill">MIT</span>

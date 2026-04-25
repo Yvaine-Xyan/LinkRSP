@@ -176,6 +176,12 @@ scopes: `rule-engine` `spec` `ops` `engineering` `go` `api` `db` `web`
 ### Go 代码编写后
 运行 `/go-check` → `make lint test` → 确认无账本 UPDATE
 
+### 每阶段结束后（文档回填）
+1. **回填实施计划**：在 `docs/engineering/implementation-plan-v1.0.md` 将已交付项标记为完成，补充实际完成日期与偏差说明
+2. **检查交叉引用**：确认规格文档（API 路径、字段名、约束参数、幂等键格式）与当前代码保持一致；不一致处须在规格文档中注记或提 issue
+3. **更新 index.html**：将对应 Phase 的状态标签从「下一步/排队中」改为「进行中/已完成」；调整共建区卡片内容反映最新进度
+4. **检查外部链接**：确认 index.html 中各文档链接路径与仓库实际文件路径对应（防止重命名后失链）
+
 ---
 
 ## 开发阶段前置条件速查
