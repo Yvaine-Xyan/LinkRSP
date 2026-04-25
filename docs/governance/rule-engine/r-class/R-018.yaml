@@ -1,0 +1,35 @@
+rule_id: "R-018"
+version: "1.0"
+category: data_integrity
+trigger: pre_execution
+severity: block
+description: >
+  同一 UID 在 5 分钟内提交的新任务与已有任务存在完全重复：
+  location_hash 相同 + 时间窗口重叠。判定为重复提交（网络重试
+  或脚本批量灌入），须拒绝后提交以保证账本幂等性。
+audit_method: rule_engine
+inputs:
+  - uid
+  - location_hash
+  - start_time_utc
+  - end_time_utc
+  - submitted_at_utc
+condition: >
+  EXISTS (
+    SELECT 1 FROM tasks t
+    WHERE t.uid_submitter = current.uid
+      AND t.location_hash = current.location_hash
+      AND t.start_time_utc = current.start_time_utc
+      AND t.end_time_utc   = current.end_time_utc
+      AND ABS(EXTRACT(EPOCH FROM (current.submitted_at_utc - t.created_at_utc))) < 300
+  )
+action: >
+  verdict: block
+  log: [new_task_candidate, duplicate_of_task_id, time_diff_seconds]
+  notify: [submitter]
+  audit_trail: required
+false_positive_notes: >
+  客户端网络重试是最常见来源，业务层应在 API 网关通过
+  idempotency_key 去重，使本规则作为第二道防线。若 location_hash
+  相同但 start_time 存在秒级差异（用户分段上报同一地点不同任务），
+  则不触发本规则。

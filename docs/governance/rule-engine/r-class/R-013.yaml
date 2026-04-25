@@ -1,0 +1,28 @@
+rule_id: "R-013"
+version: "1.0"
+category: sybil_defense
+trigger: registration
+severity: flag
+description: >
+  同一设备指纹在 24 小时滚动窗口内完成超过 5 个 UID 注册，判定为
+  疑似批量女巫账号创建。补充 R-012（IP 段）提供设备层防御。
+audit_method: rule_engine
+inputs:
+  - device_fingerprint
+  - registration_timestamp_utc
+  - uid
+condition: >
+  COUNT(DISTINCT uid)
+  WHERE device_fingerprint = current.device_fingerprint
+    AND registration_timestamp_utc >= current.registration_timestamp_utc - INTERVAL '24 hours'
+  > 5
+action: >
+  verdict: flag
+  log: [device_fingerprint, registration_count_24h, uid_list_24h]
+  notify: [operator]
+  audit_trail: required
+false_positive_notes: >
+  合法场景：公共上网终端（网吧、社区服务中心、企业集体注册）可能
+  触发本规则。运营方在处置前应核实物理环境；若设备指纹不可用则
+  退化至 R-012 IP 段规则。批量组织线下入驻活动时可由运营方申请
+  临时豁免窗口。

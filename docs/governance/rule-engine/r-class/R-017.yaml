@@ -1,0 +1,30 @@
+rule_id: "R-017"
+version: "1.0"
+category: sybil_defense
+trigger: registration
+severity: block
+description: >
+  注册时提交的手机号哈希或邮箱哈希已绑定至系统内被封禁或暂停的
+  UID。通过凭据哈希复用检测身份回收行为，防止被制裁用户借新账号
+  重入协议。
+audit_method: rule_engine
+inputs:
+  - phone_hash
+  - email_hash
+  - uid_status_lookup
+condition: >
+  EXISTS (
+    SELECT 1 FROM uids
+    WHERE (phone_hash = current.phone_hash OR email_hash = current.email_hash)
+      AND status IN ('banned', 'suspended')
+  )
+action: >
+  verdict: block
+  log: [new_uid_attempt, matched_credential_type, matched_uid, matched_status]
+  notify: [operator]
+  audit_trail: required
+false_positive_notes: >
+  共享手机号（家庭成员同号）可能误判；建议运营方在封禁时记录
+  封禁原因，针对家庭共享场景提供申诉复核路径。手机号变更后
+  原号段的新用户注册应允许申诉。邮箱哈希冲突率极低，一般不
+  产生误判。

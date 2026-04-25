@@ -1,0 +1,27 @@
+rule_id: "R-015"
+version: "1.0"
+category: credit_arbitrage
+trigger: post_execution
+severity: flag
+description: >
+  单笔任务积分产出超过全网近 30 天任务积分中位数的 50 倍。
+  极值异常可能指示：W_risk 参数被恶意堆叠、任务时长虚报、
+  或 K_global 尚未收敛时的创世期窗口套利。
+audit_method: rule_engine
+inputs:
+  - task_id
+  - credits_delta
+  - network_30d_median_credits_per_task
+condition: >
+  credits_delta > network_30d_median_credits_per_task * 50
+  AND network_30d_median_credits_per_task > 0
+action: >
+  verdict: flag
+  log: [task_id, credits_delta, network_30d_median, ratio]
+  notify: [submitter, operator]
+  audit_trail: required
+false_positive_notes: >
+  创世期（首 1000 S 任务 / 前 90 天）网络中位数极低，50 倍系数
+  可能频繁触发。此阶段可提升阈值至 200 倍或由运营方手工复核。
+  高风险行业（危险品处置、紧急医疗协助）的合法高 W_risk 任务
+  若有完整存证可向 HDGP 申诉豁免。

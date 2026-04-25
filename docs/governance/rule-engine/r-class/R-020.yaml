@@ -1,0 +1,27 @@
+rule_id: "R-020"
+version: "1.0"
+category: governance_manipulation
+trigger: periodic_audit
+severity: flag
+description: >
+  S 级（运行期）社区在 90 天滚动窗口内零完成 V≥1 任务。
+  S 级资质要求真实劳务活跃度；长期休眠的 S 社区占据名额但不
+  提供协议价值，且其 S 状态可能被滥用作信用背书。
+audit_method: rule_engine
+inputs:
+  - community_id
+  - community_status
+  - v1_plus_task_count_90d
+condition: >
+  community_status = 'S'
+  AND v1_plus_task_count_90d = 0
+action: >
+  verdict: flag
+  log: [community_id, community_status, last_v1_task_date, days_dormant]
+  notify: [community_admin, operator]
+  audit_trail: required
+false_positive_notes: >
+  季节性劳务社区（农业、节庆服务）可能有合理的 90 天休眠期；
+  此类社区应在 IPO 申报时注明季节性运营计划，运营方可配置豁免
+  窗口。社区因不可抗力（自然灾害、政策原因）暂停的，应通过
+  申诉渠道提供说明。

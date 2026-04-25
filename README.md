@@ -192,7 +192,7 @@ Credits_delta = (T_phy × V_bit) × Clip((D_base + ΣW_risk) / K_global, 0.8, 3.
 
 ## 开源策略
 
-以 **MIT** 开源（[`LICENSE`](LICENSE)）。欢迎 PR，范围包括 **HDGP RuleEngine 的 LinkRSP 场景扩展**（可行性 §6：**32** 条执行轨 = R 12 + S 16 + §6.6 混合类 4；**28** 个唯一规则 ID；引擎目标 **30–50** 条含拆分）、红队与压测报告、**Handshake v2**（BLE / 二维码 UX）、多语言文档等。
+以 **MIT** 开源（[`LICENSE`](LICENSE)）。欢迎 PR，范围包括 **HDGP RuleEngine 的 LinkRSP 场景扩展**（规则引擎已达 **50** 条唯一规则 ID；欢迎 few-shot 示例优化、false positive 场景分析、新规则提案）、红队与压测报告、**Handshake v2**（BLE / 二维码 UX）、多语言文档等。
 
 **许可说明（风险）：** MIT 允许下游在较少义务下 fork 并闭源衍生；**AGPL** 等 copyleft 可要求网络衍生服务公开对应源码，但会带来兼容性与采用面成本。**现阶段不改许可证**；待首批真实用户与合作伙伴约束明确后再评估。
 

@@ -32,8 +32,8 @@ jobs:
         run: |
           count=$(find docs/governance/rule-engine -name "*.yaml" | wc -l)
           echo "Rule YAML count: $count"
-          if [ "$count" -lt 28 ]; then
-            echo "ERROR: Expected ≥28 rule YAMLs, found $count"
+          if [ "$count" -lt 50 ]; then
+            echo "ERROR: Expected ≥50 rule YAMLs, found $count"
             exit 1
           fi
 

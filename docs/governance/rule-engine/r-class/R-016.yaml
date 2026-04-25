@@ -1,0 +1,26 @@
+rule_id: "R-016"
+version: "1.0"
+category: data_quality
+trigger: periodic_audit
+severity: warn
+description: >
+  社区滚动 30 天内 V=0（纯声明式）任务占比超过 90%。
+  长期高 V=0 比例表明社区缺乏物理存证基础设施，
+  积分数据质量低，不适合维持 S 级（运行期）资质。
+audit_method: rule_engine
+inputs:
+  - community_id
+  - task_count_30d
+  - v0_task_count_30d
+condition: >
+  task_count_30d >= 10
+  AND v0_task_count_30d::float / task_count_30d > 0.90
+action: >
+  verdict: warn
+  log: [community_id, task_count_30d, v0_task_count_30d, v0_ratio]
+  notify: [community_admin, operator]
+  audit_trail: required
+false_positive_notes: >
+  新建社区或季节性低频社区在任务数 < 10 时自动豁免（条件已含
+  task_count_30d >= 10 门槛）。纯声明式任务若有场景正当性
+  （如远程协作初期）可由社区向运营方申请临时降级豁免。

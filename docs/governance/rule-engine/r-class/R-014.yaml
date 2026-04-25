@@ -1,0 +1,25 @@
+rule_id: "R-014"
+version: "1.0"
+category: data_integrity
+trigger: post_execution
+severity: block
+description: >
+  任务请求方 UID 与任务履行方 UID 相同（自成交/自做自得）。
+  协议要求劳务存证必须为双方异体行为；自交易将导致积分凭空生成，
+  破坏物理时长锚定约束。
+audit_method: rule_engine
+inputs:
+  - task_id
+  - requester_uid
+  - fulfiller_uid
+condition: >
+  requester_uid = fulfiller_uid
+action: >
+  verdict: block
+  log: [task_id, requester_uid, fulfiller_uid]
+  notify: [submitter, operator]
+  audit_trail: required
+false_positive_notes: >
+  自我学习/练习类任务若协议明确允许单人存证，应在任务类型字段
+  标注 task_type=self_practice 并豁免本规则。目前 LRS-1.0 不支持
+  此类任务类型，故无豁免路径；后续版本新增类型前本规则全量生效。

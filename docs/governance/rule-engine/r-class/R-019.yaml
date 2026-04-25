@@ -1,0 +1,29 @@
+rule_id: "R-019"
+version: "1.0"
+category: credit_arbitrage
+trigger: periodic_audit
+severity: flag
+description: >
+  UID 在达到积分里程碑（历史积分总量突破全网 90 百分位）后的
+  7 天内，任务完成率从历史均值骤降至 0。可能指示：达到套利目标
+  后停止参与，或里程碑触发积分变现行为后退出协议。
+audit_method: rule_engine
+inputs:
+  - uid
+  - credit_total_historical
+  - network_p90_credit_total
+  - task_completion_rate_pre_milestone_30d
+  - task_completion_rate_post_milestone_7d
+condition: >
+  credit_total_historical >= network_p90_credit_total
+  AND task_completion_rate_pre_milestone_30d > 0.5
+  AND task_completion_rate_post_milestone_7d = 0
+action: >
+  verdict: flag
+  log: [uid, credit_total, network_p90, pre_rate, post_rate, milestone_date]
+  notify: [operator]
+  audit_trail: required
+false_positive_notes: >
+  合法原因：用户个人情况变化（出行、病假、工作转换）导致短期
+  停止参与。7 天窗口较短，实际部署可调整至 14 天以降低误判率。
+  应结合积分消费记录（若有账本支出侧）综合判断。
