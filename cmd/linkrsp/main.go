@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Yvaine-Xyan/linkrsp/internal/api"
 	"github.com/Yvaine-Xyan/linkrsp/internal/config"
 	"github.com/Yvaine-Xyan/linkrsp/internal/db"
 )
@@ -43,6 +44,9 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"status":"ok","env":%q}`, cfg.Env)
 	})
+
+	apiSrv := &api.Server{Pool: pool, Logger: logger}
+	apiSrv.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

@@ -3,7 +3,7 @@
 ## 项目身份
 
 **LinkRSP**（Link Reshuffling & Survival Protocol）是去中心化劳动力互助协议。  
-当前阶段：**Phase A 完成 / Phase B 启动中**（Go + PostgreSQL 规则引擎实现）。  
+当前阶段：**Phase B 进行中**（R-001–R-005 + REST API 已上线；R-006–R-010 开放共建）。  
 网站：`www.linkrsp.com` | 治理层：HDGP | 许可：MIT
 
 ---
@@ -49,9 +49,9 @@ docs/db/
   schema-v1.0-draft.md                  # 数据库模式草案
 docs/governance/rule-engine/
   README.md                             # 规则 YAML 模式说明
-  r-class/  R-001.yaml … R-010.yaml     # 确定性规则 (10条)
-  s-class/  S-001.yaml … S-016.yaml     # LLM 语义审计规则 (16条)
-  mixed/    R-011 R-012 S-009b          # 混合类规则
+  r-class/  R-001.yaml … R-020.yaml     # 确定性规则 (20条)
+  s-class/  S-001.yaml … S-029.yaml     # LLM 语义审计规则 (29条)
+  mixed/    R-011 R-012 S-009b          # 混合类规则（共 50 条 YAML）
 docs/engineering/
   implementation-plan-v1.0.md           # Phase A-G 路线图
   architecture-v0.1.md

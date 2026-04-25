@@ -60,18 +60,41 @@ status: 开发前决策集（可迭代）
 
 **目标**：在不引入付费资源、不触发国内备案的前提下，实现 R-001—R-005 的可运行闭环，产出可回放审计事件。
 
-**交付物**：
+**实际进度（截至 2026-04-25，进行中）**：
 
-- 最小后端服务（Go，单体优先）
-- 最小 Postgres schema（见 `docs/db/schema-v1.0-draft.md`）
-- 最小 API（见 `docs/spec/openapi-v1.0-draft.md`）
-- `audit_event` 落库与导出（JSON）
-- R-001—R-005 的 SQL/聚合实现（按 `time-and-window-conventions` 口径）
+| 交付物 | 状态 | 说明 |
+|--------|------|------|
+| 最小后端服务（Go 单体） | ✅ 完成 | `cmd/linkrsp/main.go`，端口 9090，优雅关闭 |
+| 最小 Postgres schema | ✅ 完成 | `db/migrations/001_init.sql`，Supabase Session Pooler 接入 |
+| 最小 REST API | ✅ 完成 | `internal/api/`，7 条路由，符合 openapi-v1.0-draft.md |
+| `audit_event` 落库 | ✅ 完成 | `internal/audit/event.go`，幂等 ON CONFLICT DO NOTHING |
+| R-001 物理悖论（并发位置） | ✅ 完成 | `internal/rules/r001/` |
+| R-002 V=2 握手速度 | ✅ 完成 | `internal/rules/r002/`，Haversine 球面距离 |
+| R-003 任务时长上限 24h | ✅ 完成 | `internal/rules/r003/`，纯算术 |
+| R-004 时间戳倒置 | ✅ 完成 | `internal/rules/r004/`，纯比较 |
+| R-005 每日工时上限 16h | ✅ 完成 | `internal/rules/r005/`，24h 滚动窗口聚合 |
+| LRS-1.0 积分计算公式 | ✅ 完成 | `internal/api/settlement.go`，D_base=1.0、K_global=1.0 创世期 |
+
+**API 路由（已上线）**：
+
+- `POST /api/v1/tasks` — 创建任务（R-004/R-003 pre_execution 检查）
+- `GET /api/v1/tasks/{task_id}` — 查询任务
+- `POST /api/v1/tasks/{task_id}/attestations` — 提交存证（R-002 post check）
+- `POST /api/v1/tasks/{task_id}/settlement/preview` — 结算预览（R-001/R-005）
+- `POST /api/v1/tasks/{task_id}/settlement/commit` — 结算落账（ledger_entries 只追加）
+- `GET /api/v1/audit-events` — 审计事件列表（含过滤）
+- `GET /api/v1/audit-events/{event_id}` — 单条审计事件
+
+**剩余工作**（进入 Phase C 前）：
+
+- R-006—R-010 实现（可在 Phase B 延伸期内完成，不阻塞 Phase C 启动）
+- 集成测试（带真实 DB 的 `_integration_test.go`）
+- `GET /api/v1/healthz` 扩展（添加 DB ping 状态）
 
 **启动条件**：
 
-- 至少 1 名工程维护者可持续投入；
-- 可使用境外 Supabase 或本地/内网 Postgres（不要求国内上线）。
+- 至少 1 名工程维护者可持续投入；✅ 已满足
+- 可使用境外 Supabase 或本地/内网 Postgres；✅ 已接入 Supabase
 
 **不做**：
 
