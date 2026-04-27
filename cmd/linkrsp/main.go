@@ -40,12 +40,9 @@ func main() {
 	slog.Info("database connected")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok","env":%q}`, cfg.Env)
-	})
 
-	apiSrv := &api.Server{Pool: pool, Logger: logger}
+	apiSrv := &api.Server{Pool: pool, Logger: logger, Env: cfg.Env}
+	apiSrv.RegisterHealthRoutes(mux)
 	apiSrv.RegisterRoutes(mux)
 
 	srv := &http.Server{

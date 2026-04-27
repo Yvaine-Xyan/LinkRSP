@@ -92,8 +92,12 @@ status: 开发前决策集（可迭代）
 
 **剩余工作**（进入 Phase C 前）：
 
-- 集成测试（带真实 DB 的 `_integration_test.go`）
-- `GET /api/v1/healthz` 扩展（添加 DB ping 状态）
+- 至少一组外部/试点环境的端到端闭环验证（真实 DB + 两名真实参与者）
+
+**Phase B 收口进展（截至 2026-04-27）**：
+
+- 集成测试（带真实 DB 的 `_integration_test.go`）已补齐 `internal/api/`
+- `GET /api/v1/healthz` 已扩展，返回 DB ping 状态
 
 **启动条件**：
 

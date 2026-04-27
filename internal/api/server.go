@@ -16,6 +16,12 @@ import (
 type Server struct {
 	Pool   *pgxpool.Pool
 	Logger *slog.Logger
+	Env    string
+}
+
+func (s *Server) RegisterHealthRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /healthz", s.healthz)
+	mux.HandleFunc("GET /api/v1/healthz", s.healthz)
 }
 
 // RegisterRoutes wires all API routes onto mux.
@@ -27,6 +33,8 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/tasks/{task_id}/settlement/commit", s.commitSettlement)
 	mux.HandleFunc("GET /api/v1/audit-events", s.listAuditEvents)
 	mux.HandleFunc("GET /api/v1/audit-events/{event_id}", s.getAuditEvent)
+	mux.HandleFunc("GET /api/v1/internal/lrs-ledger-query", s.lrsLedgerQuery)
+	mux.HandleFunc("GET /api/v1/internal/attestation-index-query", s.attestationIndexQuery)
 }
 
 // BlockedResponse is returned (HTTP 409) when a rule blocks an operation.
