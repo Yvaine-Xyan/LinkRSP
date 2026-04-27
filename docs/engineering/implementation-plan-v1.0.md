@@ -60,7 +60,7 @@ status: 开发前决策集（可迭代）
 
 **目标**：在不引入付费资源、不触发国内备案的前提下，实现 R-001—R-005 的可运行闭环，产出可回放审计事件。
 
-**实际进度（截至 2026-04-25，进行中）**：
+**实际进度（截至 2026-04-26，进行中）**：
 
 | 交付物 | 状态 | 说明 |
 |--------|------|------|
@@ -74,6 +74,11 @@ status: 开发前决策集（可迭代）
 | R-004 时间戳倒置 | ✅ 完成 | `internal/rules/r004/`，纯比较 |
 | R-005 每日工时上限 16h | ✅ 完成 | `internal/rules/r005/`，24h 滚动窗口聚合 |
 | LRS-1.0 积分计算公式 | ✅ 完成 | `internal/api/settlement.go`，D_base=1.0、K_global=1.0 创世期 |
+| R-006 积分加速度异常（d²C/dt²） | ✅ 完成 | `internal/rules/r006/`，日粒度时序 + 二阶差分，可选 DB 查询 |
+| R-007 IPO ΣW_risk 上限 | ✅ 完成 | `internal/rules/r007/`，纯比较，无 DB |
+| R-008 社区 D 共振抑制 | ✅ 完成 | `internal/rules/r008/`，调用方预聚合，无 DB |
+| R-009 连续 V=0 衰减警告 | ✅ 完成 | `internal/rules/r009/`，JOIN 查询连续 V=0 条带 |
+| R-010 创世期后 p99 离群 | ✅ 完成 | `internal/rules/r010/`，窗口判断 + PERCENTILE_CONT(0.99) |
 
 **API 路由（已上线）**：
 
@@ -87,7 +92,6 @@ status: 开发前决策集（可迭代）
 
 **剩余工作**（进入 Phase C 前）：
 
-- R-006—R-010 实现（可在 Phase B 延伸期内完成，不阻塞 Phase C 启动）
 - 集成测试（带真实 DB 的 `_integration_test.go`）
 - `GET /api/v1/healthz` 扩展（添加 DB ping 状态）
 
