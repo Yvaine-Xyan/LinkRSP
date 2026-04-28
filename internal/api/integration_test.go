@@ -37,7 +37,13 @@ func newIntegrationServer(t *testing.T) (*Server, func()) {
 	cleanupDatabase(t, pool)
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	server := &Server{Pool: pool, Logger: logger, Env: "test"}
+	server := &Server{
+		Pool:                      pool,
+		Logger:                    logger,
+		Env:                       "test",
+		R006AccelerationThreshold: 1000,
+		R010GenesisEndTime:        time.Date(2099, 1, 1, 0, 0, 0, 0, time.UTC),
+	}
 	return server, func() {
 		cleanupDatabase(t, pool)
 		pool.Close()

@@ -58,7 +58,7 @@ status: 开发前决策集（可迭代）
 
 ### Phase B：R 类规则最小可运行原型（无 LLM、无 HDGP 依赖）
 
-**目标**：在不引入付费资源、不触发国内备案的前提下，实现 R-001—R-005 的可运行闭环，产出可回放审计事件。
+**目标**：在不引入付费资源、不触发国内备案的前提下，实现 R-001—R-010 的可运行闭环，产出可回放审计事件。
 
 **实际进度（截至 2026-04-26，进行中）**：
 
@@ -84,15 +84,19 @@ status: 开发前决策集（可迭代）
 
 - `POST /api/v1/tasks` — 创建任务（R-004/R-003 pre_execution 检查）
 - `GET /api/v1/tasks/{task_id}` — 查询任务
-- `POST /api/v1/tasks/{task_id}/attestations` — 提交存证（R-002 post check）
-- `POST /api/v1/tasks/{task_id}/settlement/preview` — 结算预览（R-001/R-005）
-- `POST /api/v1/tasks/{task_id}/settlement/commit` — 结算落账（ledger_entries 只追加）
+- `POST /api/v1/tasks/{task_id}/attestations` — 提交存证（R-002 阻断检查，插入后写入 R-009 审计事件）
+- `POST /api/v1/tasks/{task_id}/settlement/preview` — 结算预览（R-001/R-005/R-006/R-010）
+- `POST /api/v1/tasks/{task_id}/settlement/commit` — 结算落账（ledger_entries 只追加）并持久化对应审计事件
 - `GET /api/v1/audit-events` — 审计事件列表（含过滤）
 - `GET /api/v1/audit-events/{event_id}` — 单条审计事件
+- `GET /api/v1/healthz` / `GET /healthz` — 服务与数据库健康检查
+- `GET /api/v1/internal/lrs-ledger-query` — 内部账本查询骨架
+- `GET /api/v1/internal/attestation-index-query` — 内部存证索引查询骨架
 
 **剩余工作**（进入 Phase C 前）：
 
 - 至少一组外部/试点环境的端到端闭环验证（真实 DB + 两名真实参与者）
+- 将 `R006AccelerationThreshold` 与 `R010GenesisEndTime` 从当前保守默认值演进为真实配置/统计来源
 
 **Phase B 收口进展（截至 2026-04-27）**：
 

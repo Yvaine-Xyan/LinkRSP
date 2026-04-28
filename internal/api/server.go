@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,9 +15,11 @@ import (
 
 // Server holds shared dependencies for all HTTP handlers.
 type Server struct {
-	Pool   *pgxpool.Pool
-	Logger *slog.Logger
-	Env    string
+	Pool                     *pgxpool.Pool
+	Logger                   *slog.Logger
+	Env                      string
+	R006AccelerationThreshold float64
+	R010GenesisEndTime       time.Time
 }
 
 func (s *Server) RegisterHealthRoutes(mux *http.ServeMux) {

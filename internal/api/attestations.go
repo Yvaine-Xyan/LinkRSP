@@ -6,6 +6,7 @@ import (
 
 	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r002"
+	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r009"
 	"github.com/google/uuid"
 )
 
@@ -124,7 +125,15 @@ func (s *Server) createAttestation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res9, err := r009.Check(r.Context(), s.Pool, r009.Input{UID: uid})
+	if err != nil {
+		s.Logger.Error("R-009 check", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "rule check error")
+		return
+	}
+
 	_ = audit.Store(r.Context(), s.Pool, res2.Event)
+	_ = audit.Store(r.Context(), s.Pool, res9.AuditEvent)
 
 	s.writeJSON(w, http.StatusCreated, attestationResponse{
 		AttestationID:     attestationID,

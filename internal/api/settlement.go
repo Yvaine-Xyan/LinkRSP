@@ -10,6 +10,8 @@ import (
 	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r001"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r005"
+	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r006"
+	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r010"
 )
 
 // vBitMap implements V_bit from the LRS-1.0 algorithm spec §2.1.
@@ -63,17 +65,18 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 	// Load task + max attestation level in one query.
 	var uid string
 	var start, end time.Time
+	var communityID *string
 	var locationHash *string
 	var verificationLevel int
 	err := s.Pool.QueryRow(r.Context(), `
-		SELECT t.uid_submitter, t.start_time_utc, t.end_time_utc, t.location_hash,
+		SELECT t.uid_submitter, t.community_id::TEXT, t.start_time_utc, t.end_time_utc, t.location_hash,
 		       COALESCE(MAX(a.verification_level), 0)
 		FROM   tasks t
 		LEFT   JOIN attestations a ON a.task_id = t.task_id
 		WHERE  t.task_id = $1::UUID
-		GROUP  BY t.uid_submitter, t.start_time_utc, t.end_time_utc, t.location_hash`,
+		GROUP  BY t.uid_submitter, t.community_id, t.start_time_utc, t.end_time_utc, t.location_hash`,
 		taskID,
-	).Scan(&uid, &start, &end, &locationHash, &verificationLevel)
+	).Scan(&uid, &communityID, &start, &end, &locationHash, &verificationLevel)
 	if err != nil {
 		if isNotFound(err) {
 			s.errorJSON(w, http.StatusNotFound, "task not found")
@@ -127,13 +130,39 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 	}
 	auditEvents = append(auditEvents, res5.Event)
 
+	// R-006: credit acceleration anomaly — post_execution (FLAG only, does not block).
+	res6, err := r006.Check(r.Context(), s.Pool, r006.Input{
+		UID:                   uid,
+		CommunityID:           derefStr(communityID),
+		AccelerationThreshold: s.R006AccelerationThreshold,
+	})
+	if err != nil {
+		s.Logger.Error("R-006 check", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "rule check error")
+		return
+	}
+	auditEvents = append(auditEvents, res6.AuditEvent)
+
 	tPhy := end.Sub(start).Minutes()
 	formula := computeCredits(tPhy, verificationLevel)
+
+	// R-010: post-genesis p99 credit outlier — post_execution (FLAG only, does not block).
+	res10, err := r010.Check(r.Context(), s.Pool, r010.Input{
+		UID:            uid,
+		GenesisEndTime: s.R010GenesisEndTime,
+		CurrentTime:    end,
+	})
+	if err != nil {
+		s.Logger.Error("R-010 check", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "rule check error")
+		return
+	}
+	auditEvents = append(auditEvents, res10.AuditEvent)
 
 	resp := settlementResponse{
 		TaskID:       taskID,
 		UID:          uid,
-		RulesChecked: []string{r001.RuleID, r005.RuleID},
+		RulesChecked: []string{r001.RuleID, r005.RuleID, r006.RuleID, r010.RuleID},
 		Verdict:      "PASS",
 		Formula:      formula,
 	}

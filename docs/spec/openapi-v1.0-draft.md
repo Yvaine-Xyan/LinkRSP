@@ -30,9 +30,11 @@
 ### 2.3 Settlement（结算）
 
 - `POST /api/v1/tasks/{task_id}/settlement/preview`
-  - 仅计算预览（不落账），返回 credits_delta 与会触发的规则摘要
+  - 仅计算预览（不落账），返回 `formula_snapshot`、`rules_checked`
+  - 当前执行链包含：`R-001`、`R-005`、`R-006`、`R-010`
 - `POST /api/v1/tasks/{task_id}/settlement/commit`
-  - 落账（append-only ledger entry），并生成 audit_event
+  - 落账（append-only ledger entry），并持久化对应 audit_event
+  - 通过 `idempotency_key` 保证重复提交返回同一 ledger entry
 
 ### 2.4 Audit events（审计事件）
 
@@ -41,7 +43,20 @@
 - `GET /api/v1/audit-events/{event_id}`
   - 查询单条审计事件
 
-### 2.5 Governance / IPO（可后置）
+### 2.5 Internal queries（内部查询骨架）
+
+- `GET /api/v1/internal/lrs-ledger-query`
+  - 按 `uid + window_start_utc + window_end_utc` 查询账本窗口
+- `GET /api/v1/internal/attestation-index-query`
+  - 按 `uid + window_start_utc + window_end_utc` 查询存证窗口
+
+### 2.6 Health（健康检查）
+
+- `GET /healthz`
+- `GET /api/v1/healthz`
+  - 返回服务状态与数据库 ping 状态
+
+### 2.7 Governance / IPO（可后置）
 
 - `POST /api/v1/ipo/applications`
 - `GET /api/v1/ipo/applications/{ipo_application_id}`
@@ -68,7 +83,10 @@
 - `verification_level`（0/1/2）
 - `timestamp_utc`
 - `location_lat/lng`（可选；可用 hash + 精度标记替代）
+- `location_hash`（可选）
 - `evidence_ref`（对象存储引用；可选）
+
+> 当前实现：存证写路径先执行 `R-002`，插入成功后补写 `R-009` 审计事件。
 
 ### 3.3 Ledger entry（只追加）
 

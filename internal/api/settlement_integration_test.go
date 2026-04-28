@@ -5,6 +5,7 @@ package api
 import (
 	"net/http"
 	"net/url"
+	"slices"
 	"testing"
 	"time"
 )
@@ -39,6 +40,7 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 
 	createTaskBody := `{
 		"uid_submitter":"uid-int-001",
+		"community_id":"11111111-1111-1111-1111-111111111111",
 		"description_text":"integration task",
 		"start_time_utc":"2026-04-27T08:00:00Z",
 		"end_time_utc":"2026-04-27T10:00:00Z",
@@ -69,6 +71,9 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 	if preview.LedgerEntryID != nil {
 		t.Fatal("preview settlement must not return ledger_entry_id")
 	}
+	if !slices.Equal(preview.RulesChecked, []string{"R-001", "R-005", "R-006", "R-010"}) {
+		t.Fatalf("preview rules_checked: got %v", preview.RulesChecked)
+	}
 	if preview.Formula.DBase != 1.0 {
 		t.Fatalf("DBase: got %.2f want 1.0", preview.Formula.DBase)
 	}
@@ -86,6 +91,9 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 	commit := decodeJSON[settlementResponse](t, commitResp)
 	if commit.LedgerEntryID == nil || *commit.LedgerEntryID == "" {
 		t.Fatal("commit settlement must return ledger_entry_id")
+	}
+	if !slices.Equal(commit.RulesChecked, []string{"R-001", "R-005", "R-006", "R-010"}) {
+		t.Fatalf("commit rules_checked: got %v", commit.RulesChecked)
 	}
 
 	commitAgainResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks/"+task.TaskID+"/settlement/commit", "")
@@ -136,6 +144,58 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 	auditEvents := decodeJSON[auditEventsListResponse](t, auditResp)
 	if auditEvents.Total < 1 {
 		t.Fatalf("audit events total: got %d want >= 1", auditEvents.Total)
+	}
+
+	ruleSeen := map[string]bool{}
+	for _, event := range auditEvents.Events {
+		ruleSeen[event.RuleID] = true
+	}
+	for _, ruleID := range []string{"R-001", "R-005", "R-006", "R-010"} {
+		if !ruleSeen[ruleID] {
+			t.Fatalf("expected audit event for %s, got rules=%v", ruleID, ruleSeen)
+		}
+	}
+}
+
+func TestCreateAttestation_PersistsR009AuditEvent(t *testing.T) {
+	server, cleanup := newIntegrationServer(t)
+	defer cleanup()
+
+	mux := newIntegrationMux(server)
+
+	for index := 0; index < 10; index++ {
+		createTaskBody := `{
+			"uid_submitter":"uid-r009-001",
+			"description_text":"v0 task",
+			"start_time_utc":"2026-04-27T08:00:00Z",
+			"end_time_utc":"2026-04-27T09:00:00Z"
+		}`
+		createTaskResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks", createTaskBody)
+		if createTaskResp.Code != http.StatusCreated {
+			t.Fatalf("create task %d: got %d want %d; body=%s", index, createTaskResp.Code, http.StatusCreated, createTaskResp.Body.String())
+		}
+		task := decodeJSON[createdTaskResponse](t, createTaskResp)
+
+		createAttestationBody := `{
+			"verification_level":0,
+			"timestamp_utc":"2026-04-27T10:05:00Z"
+		}`
+		createAttestationResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks/"+task.TaskID+"/attestations", createAttestationBody)
+		if createAttestationResp.Code != http.StatusCreated {
+			t.Fatalf("create attestation %d: got %d want %d; body=%s", index, createAttestationResp.Code, http.StatusCreated, createAttestationResp.Body.String())
+		}
+	}
+
+	auditResp := performJSONRequest(t, mux, http.MethodGet, "/api/v1/audit-events?subject_type=user&subject_id=uid-r009-001&rule_id=R-009&limit=20", "")
+	if auditResp.Code != http.StatusOK {
+		t.Fatalf("audit events query: got %d want %d; body=%s", auditResp.Code, http.StatusOK, auditResp.Body.String())
+	}
+	auditEvents := decodeJSON[auditEventsListResponse](t, auditResp)
+	if auditEvents.Total < 1 {
+		t.Fatalf("r009 audit events total: got %d want >= 1", auditEvents.Total)
+	}
+	if auditEvents.Events[0].RuleID != "R-009" {
+		t.Fatalf("expected latest rule_id R-009, got %q", auditEvents.Events[0].RuleID)
 	}
 }
 
