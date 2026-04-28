@@ -45,8 +45,8 @@ func main() {
 		Pool:                      pool,
 		Logger:                    logger,
 		Env:                       cfg.Env,
-		R006AccelerationThreshold: 1000,
-		R010GenesisEndTime:        time.Date(2099, 1, 1, 0, 0, 0, 0, time.UTC),
+		R006AccelerationThreshold: cfg.R006AccelerationThreshold,
+		R010GenesisEndTime:        cfg.R010GenesisEndTime,
 	}
 	apiSrv.RegisterHealthRoutes(mux)
 	apiSrv.RegisterRoutes(mux)
