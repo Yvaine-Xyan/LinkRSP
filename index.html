@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LinkRSP — 劳动力再平衡与生存韧性协议</title>
-  <meta name="description" content="去中心化劳动力互助协议。生存协议，织网自救。Decentralized labor mutual-aid protocol anchoring credits to auditable physical work.">
+  <meta name="description" content="去中心化劳动力互助协议，为可审计的物理劳动建立互助调度与积分锚定。Decentralized labor mutual-aid protocol anchoring credits to auditable physical work.">
   <link rel="canonical" href="https://www.linkrsp.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +46,8 @@
       color: var(--ink);
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     /* ═══ NAV ═══ */
@@ -60,10 +62,13 @@
       height: 62px; display: flex; align-items: center; gap: 1.5rem;
     }
     .nav-logo {
-      display: flex; align-items: center; gap: .55rem;
+      display: flex; align-items: center; gap: .7rem;
       text-decoration: none; flex-shrink: 0;
     }
-    .nav-logo svg { display: block; }
+    .nav-logo img {
+      width: 34px; height: 34px; object-fit: contain; display: block;
+      background: transparent; padding: 0; box-shadow: none; border-radius: 0;
+    }
     .nav-logo .logotype {
       font-size: 1.05rem; font-weight: 700;
       letter-spacing: -.025em; color: var(--g700);
@@ -142,7 +147,49 @@
         radial-gradient(ellipse 75% 55% at 50% -5%, rgba(82,183,136,.22) 0%, transparent 65%),
         radial-gradient(ellipse 35% 40% at 88% 55%, rgba(116,198,157,.12) 0%, transparent 60%);
     }
-    .hero-inner { max-width: 780px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-inner { max-width: 1040px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-layout {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      gap: 2rem;
+    }
+    .hero-copy { max-width: 860px; }
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center; width: 100%;
+    }
+    .hero-logo-wrap {
+      position: relative;
+      width: min(100%, 360px);
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .hero-logo-wrap::before {
+      content: none;
+    }
+    .hero-logo {
+      width: 100%; height: auto; display: block;
+      object-fit: contain; filter: drop-shadow(0 10px 24px rgba(22,58,40,.10));
+      border-radius: 0;
+    }
+    .hero-status-grid {
+      margin-top: 2.2rem;
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem;
+    }
+    .hero-status-card {
+      background: rgba(255,255,255,.72);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: .95rem 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .hero-status-card strong {
+      display: block; font-size: .78rem; font-weight: 700; color: var(--g800); margin-bottom: .2rem;
+    }
+    .hero-status-card span {
+      display: block; font-size: .76rem; color: var(--ink3); line-height: 1.5;
+    }
     .hero-eyebrow {
       display: inline-flex; align-items: center; gap: .5rem;
       font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
@@ -160,12 +207,21 @@
     .hero h1 {
       font-size: clamp(2.3rem, 5.5vw, 3.6rem);
       font-weight: 700; letter-spacing: -.035em; line-height: 1.12;
-      color: var(--g900); margin-bottom: 1.1rem;
+      color: var(--g800); margin-bottom: 1.1rem;
     }
-    .hero h1 em { font-style: normal; color: var(--g600); }
+    .hero h1 > span {
+      background: linear-gradient(135deg, var(--g800) 0%, var(--g600) 55%, var(--g400) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero h1 > .en-text {
+      line-height: 1.18;
+    }
+    .hero h1 em { font-style: normal; color: inherit; }
     .hero-sub {
       font-size: 1.05rem; color: var(--ink2); font-weight: 400;
-      max-width: 580px; margin: 0 auto 2.75rem; line-height: 1.75;
+      max-width: 720px; margin: 0 auto 2.75rem; line-height: 1.75;
     }
     .hero-cta {
       display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap;
@@ -203,6 +259,13 @@
     .hero-domain {
       display: inline-flex; align-items: center; gap: .4rem;
       font-size: .78rem; color: var(--ink3);
+    }
+    .hero-proof {
+      margin-top: 1.35rem;
+      display: inline-flex; align-items: center; gap: .45rem;
+      font-size: .75rem; font-weight: 600; color: var(--g700);
+      background: rgba(216,243,220,.78); border: 1px solid var(--g200);
+      padding: .4rem .75rem; border-radius: 999px;
     }
     .hero-domain .dot-sep { color: var(--g400); }
     .hero-domain a {
@@ -551,8 +614,11 @@
     }
 
     /* ═══ LANG ═══ */
-    [data-lang="en"] .zh-text { display: none; }
-    [data-lang="zh"] .en-text { display: none; }
+    [data-lang="en"] .zh-text { display: none !important; }
+    [data-lang="zh"] .en-text { display: none !important; }
+    .hero h1 > span { display: none; }
+    [data-lang="en"] .hero h1 > .en-text,
+    [data-lang="zh"] .hero h1 > .zh-text { display: inline-block !important; }
 
     /* ═══ ANIMATE ═══ */
     .fade-up {
@@ -562,6 +628,15 @@
     .fade-up.visible { opacity: 1; transform: translateY(0); }
 
     /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 900px) {
+      .hero-layout { gap: 1.6rem; }
+      .hero-copy { max-width: 100%; }
+      .hero-sub { margin: 0 auto 2.25rem; }
+      .hero-cta { justify-content: center; }
+      .hero-status-grid { grid-template-columns: 1fr; }
+      .hero-domain, .hero-proof { justify-content: center; }
+      .hero-logo-wrap { width: min(100%, 320px); }
+    }
     @media (max-width: 760px) {
       .nav-links { display: none; }
       .hero { padding: 5.5rem 1.25rem 4.5rem; }
@@ -580,12 +655,7 @@
 <nav>
   <div class="nav-inner">
     <a class="nav-logo" href="https://www.linkrsp.com/">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="11" fill="#D8F3DC"/>
-        <circle cx="12" cy="12" r="5" fill="#2D6A4F"/>
-        <path d="M12 9v6M9 12h6" stroke="#D8F3DC" stroke-width="1.4" stroke-linecap="round"/>
-        <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="#2D6A4F" stroke-width="1.2" stroke-linecap="round" opacity=".45"/>
-      </svg>
+      <img src="public/pic/LinkRSP01.2.png" alt="LinkRSP logo">
       <span class="logotype">LinkRSP</span>
       <span class="badge">Alpha</span>
     </a>
@@ -627,51 +697,81 @@
 <!-- ═══ HERO ═══ -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">
-      <span class="pulse"></span>
-      <span class="zh-text">去中心化 · 劳动力互助 · 物理存证</span>
-      <span class="en-text">Decentralized · Labor Mutual-Aid · Physical Attestation</span>
-    </div>
+    <div class="hero-layout">
+      <div class="hero-visual fade-up">
+        <div class="hero-logo-wrap">
+          <img class="hero-logo" src="public/pic/LinkRSP01.1.png" alt="LinkRSP hero logo">
+        </div>
+      </div>
 
-    <h1>
-      <span class="zh-text">生存协议，<em>织网自救</em></span>
-      <span class="en-text">Exchange time,<br><em>link surplus.</em></span>
-    </h1>
+      <div class="hero-copy">
+        <div class="hero-eyebrow">
+          <span class="pulse"></span>
+          <span class="zh-text">去中心化 · 劳动力互助 · 物理存证</span>
+          <span class="en-text">Decentralized · Labor Mutual-Aid · Physical Attestation</span>
+        </div>
 
-    <p class="hero-sub">
-      <span class="zh-text">
-        当自动化系统性替代标准化岗位，人类物理在场依然不可替代。<br>
-        LinkRSP 为可审计的物理劳务建立积分锚定与互助调度语义——<br>
-        一套备用型基础设施，为真实劳动确认坐标。
-      </span>
-      <span class="en-text">
-        When automation displaces standardized roles, human physical presence remains scarce.<br>
-        LinkRSP anchors credit semantics to auditable physical work —<br>
-        backup infrastructure that confirms coordinates for real labor.
-      </span>
-    </p>
+        <h1>
+          <span class="zh-text">生存协议，织网自救</span>
+          <span class="en-text">Exchange time,<br>link surplus.</span>
+        </h1>
 
-    <div class="hero-cta">
-      <a href="docs/whitepaper/linkrsp-whitepaper-v1.0-alpha.md" class="btn btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span class="zh-text">阅读白皮书</span><span class="en-text">Read Whitepaper</span>
-      </a>
-      <a href="docs/governance/rule-engine/README.md" class="btn btn-outline">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
-        <span class="zh-text">规则引擎</span><span class="en-text">Rule Engine</span>
-      </a>
-      <a href="#contribute" class="btn btn-outline">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="zh-text">共同建设</span><span class="en-text">Contribute</span>
-      </a>
-    </div>
+        <p class="hero-sub">
+          <span class="zh-text">
+            当自动化系统性替代标准化岗位，人类物理在场依然不可替代。<br>
+            LinkRSP 为可审计的物理劳务建立积分锚定与互助调度语义——<br>
+            一套备用型基础设施，为真实劳动确认坐标。
+          </span>
+          <span class="en-text">
+            When automation displaces standardized roles, human physical presence remains scarce.<br>
+            LinkRSP anchors credit semantics to auditable physical work —<br>
+            backup infrastructure that confirms coordinates for real labor.
+          </span>
+        </p>
 
-    <div class="hero-domain">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      <a href="https://www.linkrsp.com/" target="_blank" rel="noopener">www.linkrsp.com</a>
-      <span class="dot-sep">·</span>
-      <span class="zh-text">MIT 开源 · Phase B 开发中</span>
-      <span class="en-text">MIT · Phase B Active</span>
+        <div class="hero-cta">
+          <a href="docs/whitepaper/linkrsp-whitepaper-v1.0-alpha.md" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="zh-text">阅读白皮书</span><span class="en-text">Read Whitepaper</span>
+          </a>
+          <a href="docs/governance/rule-engine/README.md" class="btn btn-outline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+            <span class="zh-text">规则引擎</span><span class="en-text">Rule Engine</span>
+          </a>
+          <a href="#contribute" class="btn btn-outline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span class="zh-text">共同建设</span><span class="en-text">Contribute</span>
+          </a>
+        </div>
+
+        <div class="hero-domain">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <a href="https://www.linkrsp.com/" target="_blank" rel="noopener">www.linkrsp.com</a>
+          <span class="dot-sep">·</span>
+          <span class="zh-text">MIT 开源 · Phase B / C 过渡推进中</span>
+          <span class="en-text">MIT · Phase B/C Transition Active</span>
+        </div>
+
+        <div class="hero-proof">
+          <span class="zh-text">最新进展：R-006 / R-009 / R-010 已接入执行链，敏感接口已加共享密钥门禁</span>
+          <span class="en-text">Latest: R-006 / R-009 / R-010 wired into execution flow, sensitive routes guarded by shared secret</span>
+        </div>
+
+        <div class="hero-status-grid">
+          <div class="hero-status-card">
+            <strong><span class="zh-text">规则执行链</span><span class="en-text">Rule Execution</span></strong>
+            <span><span class="zh-text">R-001–R-010 已具备可运行主链路，结算侧已接入 R-006 / R-010。</span><span class="en-text">R-001–R-010 now have runnable main-path coverage, with R-006 / R-010 wired into settlement.</span></span>
+          </div>
+          <div class="hero-status-card">
+            <strong><span class="zh-text">审计与账本</span><span class="en-text">Audit & Ledger</span></strong>
+            <span><span class="zh-text">审计事件全链路落库，结算保持 preview / commit 分离与幂等写入。</span><span class="en-text">Audit events persist end-to-end, with preview/commit separation and idempotent settlement writes.</span></span>
+          </div>
+          <div class="hero-status-card">
+            <strong><span class="zh-text">运行时控制</span><span class="en-text">Runtime Controls</span></strong>
+            <span><span class="zh-text">已开放 API 共享密钥与 R-006 / R-010 运行时参数配置，便于 Phase B/C 过渡。</span><span class="en-text">Shared-secret API gating and R-006 / R-010 runtime knobs are now exposed for the Phase B/C transition.</span></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -930,16 +1030,16 @@
         <div class="phase-body">
           <span class="phase-label active"><span class="zh-text">进行中</span><span class="en-text">In Progress</span></span>
           <h4><span class="zh-text">Phase B — R 类规则 MVP</span><span class="en-text">Phase B — R-Class Rules MVP</span></h4>
-          <p><span class="zh-text">Go + PostgreSQL + Supabase；R-001–R-005 全部实现并通过单元测试；REST API（7条路由）上线；LRS-1.0 积分公式（D_base=1.0 创世期）可运行；审计事件全链路落库。</span><span class="en-text">Go + PostgreSQL + Supabase; R-001–R-005 implemented with unit tests; REST API (7 routes) live; LRS-1.0 formula (genesis period) runnable; full audit event persistence.</span></p>
+          <p><span class="zh-text">Go + PostgreSQL + Supabase；R-001–R-010 已进入可运行主链路，其中 R-006 / R-010 已接入结算、R-009 已接入 attestations；运行时配置与共享密钥门禁已落地。</span><span class="en-text">Go + PostgreSQL + Supabase; R-001–R-010 are now entering the runnable main path, with R-006 / R-010 wired into settlement, R-009 into attestations, plus runtime config and shared-secret gating in place.</span></p>
         </div>
       </div>
 
       <div class="phase-item fade-up" style="transition-delay:.14s">
-        <div class="phase-dot later">C</div>
+        <div class="phase-dot active">C</div>
         <div class="phase-body">
-          <span class="phase-label later"><span class="zh-text">排队中</span><span class="en-text">Queued</span></span>
+          <span class="phase-label active"><span class="zh-text">推进中</span><span class="en-text">Advancing</span></span>
           <h4><span class="zh-text">Phase C — 账本 & 结算</span><span class="en-text">Phase C — Ledger & Settlement</span></h4>
-          <p><span class="zh-text">只追加事件账本；结算预览 / 提交 API；需两名真实用户参与闭环验证。</span><span class="en-text">Append-only event ledger; settlement preview/commit API; requires 2 real users for closed-loop trial.</span></p>
+          <p><span class="zh-text">只追加事件账本、结算预览 / 提交 API 与幂等写入已成型；当前重点转向闭环试跑、真实用户验证与更多规则接线收口。</span><span class="en-text">Append-only ledger flow, settlement preview/commit APIs, and idempotent writes are now shaped; focus shifts to closed-loop trials, real-user validation, and finishing rule wiring.</span></p>
         </div>
       </div>
 
@@ -1076,8 +1176,8 @@
           <span class="en-text">Build <em>LinkRSP</em><br>Together</span>
         </h2>
         <p class="contribute-sub">
-          <span class="zh-text">我们处于架构阶段，规格已冻结，代码刚刚启动。如果你相信真实劳动应当被可审计地记录，欢迎加入建设。</span>
-          <span class="en-text">We're in the architecture phase — specs frozen, code just starting. If you believe real labor deserves auditable recognition, come build with us.</span>
+          <span class="zh-text">规格已冻结，后端主链路已启动并持续接线中。当前最需要的是把规则执行、结算闭环、审计与真实试跑继续推到可交付状态。</span>
+          <span class="en-text">Specs are frozen and the backend main path is live and still being wired. The highest-value work now is pushing rule execution, settlement loops, auditing, and real trials toward delivery.</span>
         </p>
         <div class="contribute-cta">
           <a href="https://github.com/Yvaine-Xyan/LinkRSP" target="_blank" rel="noopener" class="btn btn-ghost">
@@ -1104,8 +1204,8 @@
         </div>
         <h3><span class="zh-text">Go 工程师</span><span class="en-text">Go Engineers</span></h3>
         <p>
-          <span class="zh-text">Phase B 进行中：R-001–R-005 + REST API 已上线，R-006–R-010 开放共建。Go + PostgreSQL，只追加事件账本，规格冻结，可直接 fork 开始。</span>
-          <span class="en-text">Phase B active: R-001–R-005 + REST API live; R-006–R-010 open for co-build. Go + PostgreSQL, append-only ledger, specs frozen — fork and start.</span>
+          <span class="zh-text">当前主线是把 R-001–R-010、结算 preview / commit、审计落库与内部查询继续打磨成稳定闭环。Go + PostgreSQL，只追加账本，规格冻结，可直接从现有 API 与规则实现接手。</span>
+          <span class="en-text">The current mainline is stabilizing R-001–R-010, settlement preview/commit, audit persistence, and internal queries into a reliable loop. Go + PostgreSQL, append-only ledger, specs frozen — contributors can plug directly into the current API and rule implementation.</span>
         </p>
         <span class="area-chip"><span class="zh-text">最急需</span><span class="en-text">Most Needed</span></span>
       </div>
@@ -1128,8 +1228,8 @@
         </div>
         <h3><span class="zh-text">红队 & 压测</span><span class="en-text">Red-Team & Stress Testing</span></h3>
         <p>
-          <span class="zh-text">尝试欺骗规则引擎、构造极端边界案例，撰写红队报告。发现漏洞有助于提前修补协议盲区。</span>
-          <span class="en-text">Attempt to fool the rule engine, construct edge cases, and write red-team reports. Findings help patch protocol blind spots before launch.</span>
+          <span class="zh-text">优先检验写接口门禁、规则边界、preview / commit 幂等与异常时间窗口。边界报告越早出现，主网上线前的补洞成本越低。</span>
+          <span class="en-text">Priority targets are write-route gating, rule boundaries, preview/commit idempotency, and abnormal time windows. Early boundary reports reduce the cost of patching before production rollout.</span>
         </p>
         <span class="area-chip"><span class="zh-text">安全研究</span><span class="en-text">Security Research</span></span>
       </div>
@@ -1232,6 +1332,26 @@
   }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  document.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener('copy', (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener('cut', (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener('selectstart', (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener('dragstart', (event) => {
+    event.preventDefault();
+  });
 </script>
 </body>
 </html>

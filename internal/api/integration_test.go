@@ -41,6 +41,7 @@ func newIntegrationServer(t *testing.T) (*Server, func()) {
 		Pool:                      pool,
 		Logger:                    logger,
 		Env:                       "test",
+		APISharedSecret:           "test-shared-secret",
 		R006AccelerationThreshold: 1000,
 		R010GenesisEndTime:        time.Date(2099, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
@@ -73,9 +74,17 @@ func cleanupDatabase(t *testing.T, pool *db.Pool) {
 
 func performJSONRequest(t *testing.T, mux *http.ServeMux, method, path string, body string) *httptest.ResponseRecorder {
 	t.Helper()
+	return performAuthorizedJSONRequest(t, mux, method, path, body, true)
+}
+
+func performAuthorizedJSONRequest(t *testing.T, mux *http.ServeMux, method, path string, body string, authorized bool) *httptest.ResponseRecorder {
+	t.Helper()
 
 	req := httptest.NewRequest(method, path, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	if authorized {
+		req.Header.Set("X-API-Shared-Secret", "test-shared-secret")
+	}
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	return w

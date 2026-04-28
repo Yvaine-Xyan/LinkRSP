@@ -12,6 +12,7 @@ type Config struct {
 	Port                        string
 	LogLevel                    string
 	Env                         string
+	APISharedSecret             string
 	R006AccelerationThreshold   float64
 	R010GenesisEndTime          time.Time
 }
@@ -36,6 +37,8 @@ func Load() (*Config, error) {
 	if env == "" {
 		env = "development"
 	}
+
+	apiSharedSecret := os.Getenv("API_SHARED_SECRET")
 
 	r006AccelerationThreshold := 1000.0
 	r006AccelerationThresholdRaw := os.Getenv("R006_ACCELERATION_THRESHOLD")
@@ -62,6 +65,7 @@ func Load() (*Config, error) {
 		Port:                      port,
 		LogLevel:                  logLevel,
 		Env:                       env,
+		APISharedSecret:           apiSharedSecret,
 		R006AccelerationThreshold: r006AccelerationThreshold,
 		R010GenesisEndTime:        r010GenesisEndTime,
 	}, nil

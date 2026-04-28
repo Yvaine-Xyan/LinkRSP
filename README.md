@@ -76,6 +76,22 @@ Licensed under **MIT** ([`LICENSE`](LICENSE)). Contributions are welcome via PR;
 
 ---
 
+## Runtime configuration
+
+Current backend runtime variables are declared in [`.env.example`](.env.example).
+
+| Variable | Purpose | Current default / note |
+|----------|---------|------------------------|
+| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `PORT` | HTTP listen port | `9090` in example |
+| `LOG_LEVEL` | Structured log verbosity | `info` |
+| `ENV` | Runtime environment label | `development` |
+| `API_SHARED_SECRET` | Minimal shared-secret gate for write routes, internal queries, and audit-event query endpoints | Empty = local compatibility pass-through; set in deployed environments |
+| `R006_ACCELERATION_THRESHOLD` | Runtime threshold for `R-006` credit acceleration anomaly checks | `1000` |
+| `R010_GENESIS_END_TIME` | Runtime genesis cutoff for `R-010` post-genesis outlier checks | RFC3339; example uses `2099-01-01T00:00:00Z` |
+
+These knobs are transitional Phase B / Phase C runtime controls, not protocol-governance changes. In particular, they do **not** alter the frozen LRS-1.0 constants such as `D_base = 1.0`, the `Clip(0.8, 3.0)` bounds, or the credits-not-currency model.
+
 ## Technology direction (architecture phase)
 
 Backend language is **locked to Go** for LinkRSP core services (see [`docs/engineering/technology-strategy-v1.0.md`](docs/engineering/technology-strategy-v1.0.md) §3.1): aligns with typical **HDGP Engine** implementations and reduces cross-language adapter cost. Other layers remain as documented. Full direction: [`docs/engineering/technology-strategy-v1.0.md`](docs/engineering/technology-strategy-v1.0.md). Summary:

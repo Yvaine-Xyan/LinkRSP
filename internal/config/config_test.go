@@ -28,12 +28,16 @@ func TestLoad_UsesDefaultsForSettlementRuntimeConfig(t *testing.T) {
 
 func TestLoad_ParsesSettlementRuntimeConfig(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("API_SHARED_SECRET", "secret-123")
 	t.Setenv("R006_ACCELERATION_THRESHOLD", "12.5")
 	t.Setenv("R010_GENESIS_END_TIME", "2026-04-28T00:00:00+08:00")
 
 	cfg, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
+	}
+	if cfg.APISharedSecret != "secret-123" {
+		t.Fatalf("APISharedSecret: got %q want %q", cfg.APISharedSecret, "secret-123")
 	}
 	if cfg.R006AccelerationThreshold != 12.5 {
 		t.Fatalf("R006AccelerationThreshold: got %.2f want 12.5", cfg.R006AccelerationThreshold)

@@ -45,6 +45,7 @@ func main() {
 		Pool:                      pool,
 		Logger:                    logger,
 		Env:                       cfg.Env,
+		APISharedSecret:           cfg.APISharedSecret,
 		R006AccelerationThreshold: cfg.R006AccelerationThreshold,
 		R010GenesisEndTime:        cfg.R010GenesisEndTime,
 	}
