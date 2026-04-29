@@ -90,8 +90,8 @@ status: 开发前决策集（可迭代）
 - `GET /api/v1/audit-events` — 审计事件列表（含过滤）
 - `GET /api/v1/audit-events/{event_id}` — 单条审计事件
 - `GET /api/v1/healthz` / `GET /healthz` — 服务与数据库健康检查
-- `GET /api/v1/internal/lrs-ledger-query` — 内部账本查询骨架
-- `GET /api/v1/internal/attestation-index-query` — 内部存证索引查询骨架
+- `GET /api/v1/internal/lrs-ledger-query` — 内部账本窗口查询（返回分录列表、`entry_count` 与 `projected_balance` 投影视图）
+- `GET /api/v1/internal/attestation-index-query` — 内部存证窗口查询（返回存证列表，供规则与统计复用）
 
 **剩余工作**（进入 Phase C 前）：
 
@@ -102,6 +102,8 @@ status: 开发前决策集（可迭代）
 
 - 集成测试（带真实 DB 的 `_integration_test.go`）已补齐 `internal/api/`
 - `GET /api/v1/healthz` 已扩展，返回 DB ping 状态
+- 内部查询已从“接口骨架”推进为“窗口投影视图语义”，`lrs-ledger-query` 返回 `entry_count`、窗口 `projected_balance` 与逐笔 `projected_balance`
+- 结算提交已收敛为账本分录与审计事件同事务提交，降低“已落账但无审计”的不一致风险
 
 **启动条件**：
 

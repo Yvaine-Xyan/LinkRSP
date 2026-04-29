@@ -748,19 +748,19 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <a href="https://www.linkrsp.com/" target="_blank" rel="noopener">www.linkrsp.com</a>
           <span class="dot-sep">·</span>
-          <span class="zh-text">MIT 开源 · Phase B / C 过渡推进中</span>
-          <span class="en-text">MIT · Phase B/C Transition Active</span>
+          <span class="zh-text">MIT 开源 · Phase B 收口 / Phase C 推进中</span>
+          <span class="en-text">MIT · Phase B Closing / Phase C Advancing</span>
         </div>
 
         <div class="hero-proof">
-          <span class="zh-text">最新进展：R-006 / R-009 / R-010 已接入执行链，敏感接口已加共享密钥门禁</span>
-          <span class="en-text">Latest: R-006 / R-009 / R-010 wired into execution flow, sensitive routes guarded by shared secret</span>
+          <span class="zh-text">最新进展：结算已收敛为账本分录与审计事件同事务提交，内部查询已具备窗口投影视图语义</span>
+          <span class="en-text">Latest: settlement now commits ledger entries and audit events atomically, and internal queries expose replayable projection semantics</span>
         </div>
 
         <div class="hero-status-grid">
           <div class="hero-status-card">
             <strong><span class="zh-text">规则执行链</span><span class="en-text">Rule Execution</span></strong>
-            <span><span class="zh-text">R-001–R-010 已具备可运行主链路，结算侧已接入 R-006 / R-010。</span><span class="en-text">R-001–R-010 now have runnable main-path coverage, with R-006 / R-010 wired into settlement.</span></span>
+            <span><span class="zh-text">R-001–R-010 已具备可运行主链路，R-006 / R-010 接入结算，R-009 接入存证写路径。</span><span class="en-text">R-001–R-010 now have runnable main-path coverage, with R-006 / R-010 in settlement and R-009 on attestation writes.</span></span>
           </div>
           <div class="hero-status-card">
             <strong><span class="zh-text">审计与账本</span><span class="en-text">Audit & Ledger</span></strong>
@@ -1152,7 +1152,16 @@
         <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
 
-      <a href="docs/reports/feasibility-assessment-v1.0-alpha.md" class="doc-link fade-up" style="transition-delay:.35s">
+      <a href="docs/security/threat-model-scope-v1.0.md" class="doc-link fade-up" style="transition-delay:.35s">
+        <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="doc-meta">
+          <strong><span class="zh-text">威胁模型范围 v1.0</span><span class="en-text">Threat Model Scope v1.0</span></strong>
+          <span><span class="zh-text">STRIDE 基线、信任边界、攻击面与最小安全收口</span><span class="en-text">STRIDE baseline, trust boundaries, attack surface, and minimum security closure</span></span>
+        </div>
+        <svg class="doc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a href="docs/reports/feasibility-assessment-v1.0-alpha.md" class="doc-link fade-up" style="transition-delay:.4s">
         <div class="doc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <div class="doc-meta">
           <strong><span class="zh-text">可行性评估 v1.0 Alpha</span><span class="en-text">Feasibility Assessment v1.0 Alpha</span></strong>
@@ -1287,6 +1296,7 @@
           <li><a href="docs/engineering/implementation-plan-v1.0.md"><span class="zh-text">实施计划</span><span class="en-text">Implementation Plan</span></a></li>
           <li><a href="docs/engineering/architecture-v0.1.md"><span class="zh-text">架构草案</span><span class="en-text">Architecture Draft</span></a></li>
           <li><a href="docs/engineering/technology-strategy-v1.0.md"><span class="zh-text">技术策略</span><span class="en-text">Tech Strategy</span></a></li>
+          <li><a href="docs/security/threat-model-scope-v1.0.md"><span class="zh-text">威胁模型范围</span><span class="en-text">Threat Model Scope</span></a></li>
           <li><a href="docs/db/schema-v1.0-draft.md"><span class="zh-text">数据库模式草案</span><span class="en-text">DB Schema Draft</span></a></li>
         </ul>
       </div>
@@ -1305,8 +1315,8 @@
 
   <div class="footer-bottom">
     <p>
-      <span class="zh-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B 开发中</span>
-      <span class="en-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B in development</span>
+      <span class="zh-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B 收口 / Phase C 推进中</span>
+      <span class="en-text">© 2026 Yvaine He · LinkRSP · www.linkrsp.com · Phase B closing / Phase C advancing</span>
     </p>
     <div class="footer-badges">
       <span class="badge-pill">MIT</span>
