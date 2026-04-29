@@ -11,12 +11,12 @@ import (
 )
 
 type createdTaskResponse struct {
-	TaskID          string  `json:"task_id"`
-	UIDSubmitter    string  `json:"uid_submitter"`
-	DescriptionText string  `json:"description_text"`
-	StartTimeUTC    string  `json:"start_time_utc"`
-	EndTimeUTC      string  `json:"end_time_utc"`
-	CreatedAtUTC    string  `json:"created_at_utc"`
+	TaskID          string `json:"task_id"`
+	UIDSubmitter    string `json:"uid_submitter"`
+	DescriptionText string `json:"description_text"`
+	StartTimeUTC    string `json:"start_time_utc"`
+	EndTimeUTC      string `json:"end_time_utc"`
+	CreatedAtUTC    string `json:"created_at_utc"`
 }
 
 type createdAttestationResponse struct {
@@ -118,8 +118,14 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 	if ledger.Entries[0].TaskID != task.TaskID {
 		t.Fatalf("ledger task_id: got %q want %q", ledger.Entries[0].TaskID, task.TaskID)
 	}
-	if ledger.TotalCredits != 60 {
-		t.Fatalf("ledger total credits: got %.2f want 60", ledger.TotalCredits)
+	if ledger.EntryCount != 1 {
+		t.Fatalf("ledger entry_count: got %d want 1", ledger.EntryCount)
+	}
+	if ledger.ProjectedBalance != 60 {
+		t.Fatalf("ledger projected_balance: got %.2f want 60", ledger.ProjectedBalance)
+	}
+	if ledger.Entries[0].ProjectedBalance != 60 {
+		t.Fatalf("ledger entry projected_balance: got %.2f want 60", ledger.Entries[0].ProjectedBalance)
 	}
 
 	attestationResp := performJSONRequest(t, mux, http.MethodGet, "/api/v1/internal/attestation-index-query?uid=uid-int-001&window_start_utc="+windowStart+"&window_end_utc="+windowEnd, "")
@@ -142,18 +148,21 @@ func TestSettlementCommit_PersistsLedgerAndAuditEvents(t *testing.T) {
 		t.Fatalf("audit events query: got %d want %d; body=%s", auditResp.Code, http.StatusOK, auditResp.Body.String())
 	}
 	auditEvents := decodeJSON[auditEventsListResponse](t, auditResp)
-	if auditEvents.Total < 1 {
-		t.Fatalf("audit events total: got %d want >= 1", auditEvents.Total)
+	if auditEvents.Total != 6 {
+		t.Fatalf("audit events total: got %d want 6", auditEvents.Total)
 	}
 
-	ruleSeen := map[string]bool{}
+	ruleSeen := map[string]int{}
 	for _, event := range auditEvents.Events {
-		ruleSeen[event.RuleID] = true
+		ruleSeen[event.RuleID]++
 	}
 	for _, ruleID := range []string{"R-001", "R-005", "R-006", "R-010"} {
-		if !ruleSeen[ruleID] {
-			t.Fatalf("expected audit event for %s, got rules=%v", ruleID, ruleSeen)
+		if ruleSeen[ruleID] != 1 {
+			t.Fatalf("expected exactly one audit event for %s, got counts=%v", ruleID, ruleSeen)
 		}
+	}
+	if ruleSeen["R-004"] != 1 || ruleSeen["R-003"] != 1 {
+		t.Fatalf("expected task creation audit events once each, got counts=%v", ruleSeen)
 	}
 }
 

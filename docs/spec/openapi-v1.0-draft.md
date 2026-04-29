@@ -43,12 +43,17 @@
 - `GET /api/v1/audit-events/{event_id}`
   - 查询单条审计事件
 
-### 2.5 Internal queries（内部查询骨架）
+### 2.5 Internal queries（内部查询 / 投影视图骨架）
 
 - `GET /api/v1/internal/lrs-ledger-query`
   - 按 `uid + window_start_utc + window_end_utc` 查询账本窗口
+  - 返回窗口内分录列表 `entries[]`
+  - 返回 `entry_count` 作为窗口内分录计数
+  - 返回 `projected_balance` 作为按 `created_at_utc ASC` 回放后的窗口投影余额
+  - 每条分录包含 `projected_balance`，用于回放每一步累计结果
 - `GET /api/v1/internal/attestation-index-query`
   - 按 `uid + window_start_utc + window_end_utc` 查询存证窗口
+  - 返回窗口内存证列表 `items[]`，供规则与统计查询复用
 
 ### 2.6 Health（健康检查）
 

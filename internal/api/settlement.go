@@ -12,6 +12,7 @@ import (
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r005"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r006"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r010"
+	"github.com/jackc/pgx/v5"
 )
 
 // vBitMap implements V_bit from the LRS-1.0 algorithm spec §2.1.
@@ -21,8 +22,8 @@ var vBitMap = map[int]float64{0: 0.1, 1: 0.5, 2: 1.0}
 type FormulaSnapshot struct {
 	TPhyMinutes  float64 `json:"t_phy_minutes"`
 	VBit         float64 `json:"v_bit"`
-	DBase        float64 `json:"d_base"`  // frozen at 1.0 per C-3
-	WRisk        float64 `json:"w_risk"`  // 0.0 in Phase B
+	DBase        float64 `json:"d_base"`   // frozen at 1.0 per C-3
+	WRisk        float64 `json:"w_risk"`   // 0.0 in Phase B
 	KGlobal      float64 `json:"k_global"` // 1.0 genesis period per C-4
 	ClipResult   float64 `json:"clip_result"`
 	CreditsDelta float64 `json:"credits_delta"`
@@ -107,7 +108,9 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 	auditEvents = append(auditEvents, res1.Event)
 	if res1.Event.Verdict.Result == audit.VerdictBlock {
 		if commit {
-			_ = audit.Store(r.Context(), s.Pool, res1.Event)
+			if err := audit.Store(r.Context(), s.Pool, res1.Event); err != nil {
+				s.Logger.Error("store R-001 block audit event", "error", err)
+			}
 		}
 		s.writeJSON(w, http.StatusConflict, BlockedResponse{
 			Error: "blocked", RuleID: r001.RuleID, RuleVersion: "1.0",
@@ -172,13 +175,25 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 		return
 	}
 
-	// Commit: idempotent ledger entry (append-only, C-6).
+	// Commit: ledger + audit events in one transaction.
 	idKey := fmt.Sprintf("%s|settlement", taskID)
-	formulaJSON, _ := json.Marshal(formula)
+	formulaJSON, err := json.Marshal(formula)
+	if err != nil {
+		s.Logger.Error("marshal settlement formula", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
 
-	// Try insert first; if conflict (already settled) fetch existing entry_id.
+	tx, err := s.Pool.Begin(r.Context())
+	if err != nil {
+		s.Logger.Error("begin settlement transaction", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
 	var entryID string
-	insertErr := s.Pool.QueryRow(r.Context(), `
+	insertErr := tx.QueryRow(r.Context(), `
 		INSERT INTO ledger_entries
 			(task_id, uid, credits_delta, formula_snapshot, idempotency_key)
 		VALUES ($1::UUID, $2, $3, $4, $5)
@@ -187,9 +202,8 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 		taskID, uid, formula.CreditsDelta, formulaJSON, idKey,
 	).Scan(&entryID)
 	if insertErr != nil {
-		// No row returned = conflict; fetch the existing entry.
 		if isNotFound(insertErr) {
-			fetchErr := s.Pool.QueryRow(r.Context(),
+			fetchErr := tx.QueryRow(r.Context(),
 				`SELECT entry_id::TEXT FROM ledger_entries WHERE idempotency_key = $1`,
 				idKey,
 			).Scan(&entryID)
@@ -206,7 +220,17 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 	}
 
 	for _, ev := range auditEvents {
-		_ = audit.Store(r.Context(), s.Pool, ev)
+		if err := audit.StoreWithExecer(r.Context(), tx, ev); err != nil {
+			s.Logger.Error("store settlement audit event", "rule_id", ev.Rule.RuleID, "error", err)
+			s.errorJSON(w, http.StatusInternalServerError, "database error")
+			return
+		}
+	}
+
+	if err := tx.Commit(r.Context()); err != nil && err != pgx.ErrTxClosed {
+		s.Logger.Error("commit settlement transaction", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
 	}
 
 	resp.LedgerEntryID = &entryID

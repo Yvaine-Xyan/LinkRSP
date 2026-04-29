@@ -7,36 +7,38 @@ import (
 )
 
 type lrsLedgerQueryResponse struct {
-	UID          string             `json:"uid"`
-	WindowStart  string             `json:"window_start_utc"`
-	WindowEnd    string             `json:"window_end_utc"`
-	Entries      []ledgerEntryItem  `json:"entries"`
-	TotalCredits float64            `json:"total_credits"`
+	UID              string            `json:"uid"`
+	WindowStart      string            `json:"window_start_utc"`
+	WindowEnd        string            `json:"window_end_utc"`
+	EntryCount       int               `json:"entry_count"`
+	ProjectedBalance float64           `json:"projected_balance"`
+	Entries          []ledgerEntryItem `json:"entries"`
 }
 
 type ledgerEntryItem struct {
-	EntryID        string  `json:"entry_id"`
-	TaskID         string  `json:"task_id"`
-	UID            string  `json:"uid"`
-	CreditsDelta   float64 `json:"credits_delta"`
-	CreatedAtUTC   string  `json:"created_at_utc"`
-	IdempotencyKey string  `json:"idempotency_key"`
+	EntryID          string  `json:"entry_id"`
+	TaskID           string  `json:"task_id"`
+	UID              string  `json:"uid"`
+	CreditsDelta     float64 `json:"credits_delta"`
+	ProjectedBalance float64 `json:"projected_balance"`
+	CreatedAtUTC     string  `json:"created_at_utc"`
+	IdempotencyKey   string  `json:"idempotency_key"`
 }
 
 type attestationIndexQueryResponse struct {
-	UID         string                `json:"uid"`
-	WindowStart string                `json:"window_start_utc"`
-	WindowEnd   string                `json:"window_end_utc"`
+	UID         string                 `json:"uid"`
+	WindowStart string                 `json:"window_start_utc"`
+	WindowEnd   string                 `json:"window_end_utc"`
 	Items       []attestationIndexItem `json:"items"`
 }
 
 type attestationIndexItem struct {
-	AttestationID     string   `json:"attestation_id"`
-	TaskID            string   `json:"task_id"`
-	VerificationLevel int      `json:"verification_level"`
-	TimestampUTC      string   `json:"timestamp_utc"`
-	LocationHash      *string  `json:"location_hash,omitempty"`
-	EvidenceRef       *string  `json:"evidence_ref,omitempty"`
+	AttestationID     string  `json:"attestation_id"`
+	TaskID            string  `json:"task_id"`
+	VerificationLevel int     `json:"verification_level"`
+	TimestampUTC      string  `json:"timestamp_utc"`
+	LocationHash      *string `json:"location_hash,omitempty"`
+	EvidenceRef       *string `json:"evidence_ref,omitempty"`
 }
 
 func (s *Server) lrsLedgerQuery(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +83,9 @@ func (s *Server) lrsLedgerQuery(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		item.CreatedAtUTC = createdAt.UTC().Format(time.RFC3339)
-		resp.TotalCredits += item.CreditsDelta
+		resp.ProjectedBalance += item.CreditsDelta
+		item.ProjectedBalance = resp.ProjectedBalance
+		resp.EntryCount++
 		resp.Entries = append(resp.Entries, item)
 	}
 	if err := rows.Err(); err != nil {

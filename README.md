@@ -78,6 +78,14 @@ Licensed under **MIT** ([`LICENSE`](LICENSE)). Contributions are welcome via PR;
 
 ## Runtime configuration
 
+## Static site deployment
+
+- Homepage entry is repository-root [`index.html`](index.html).
+- Static assets live in repository-root [`pic/`](pic/).
+- Do not reintroduce a `public/` asset directory for the homepage deployment path.
+- Vercel deployment is pinned by [`vercel.json`](vercel.json) so `/` resolves to the root `index.html`.
+
+
 Current backend runtime variables are declared in [`.env.example`](.env.example).
 
 | Variable | Purpose | Current default / note |
@@ -128,7 +136,7 @@ Backend language is **locked to Go** for LinkRSP core services (see [`docs/engin
 ## Contact
 
 Yvaine He — Founder & Architect  
-yvaine.he83@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
+xyan8921@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
 
 ---
 
@@ -249,7 +257,7 @@ Credits_delta = (T_phy × V_bit) × Clip((D_base + ΣW_risk) / K_global, 0.8, 3.
 ## 联系
 
 Yvaine He · Founder & Architect  
-yvaine.he83@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
+xyan8921@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
 
 ---
 

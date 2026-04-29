@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,9 +31,9 @@ type Event struct {
 }
 
 type RuleRef struct {
-	RuleID    string `json:"rule_id"`
-	Version   string `json:"rule_version"`
-	Category  string `json:"category"`
+	RuleID   string `json:"rule_id"`
+	Version  string `json:"rule_version"`
+	Category string `json:"category"`
 }
 
 type Scope struct {
@@ -47,15 +48,15 @@ type Subject struct {
 }
 
 type VerdictOf struct {
-	Result      Verdict  `json:"result"`
-	Severity    string   `json:"severity"`
-	Confidence  *float64 `json:"confidence"`
-	AutoActioned bool    `json:"auto_actioned"`
+	Result       Verdict  `json:"result"`
+	Severity     string   `json:"severity"`
+	Confidence   *float64 `json:"confidence"`
+	AutoActioned bool     `json:"auto_actioned"`
 }
 
 type Evidence struct {
-	MatchedPattern  *string  `json:"matched_pattern,omitempty"`
-	ConflictingIDs  []string `json:"conflicting_ids,omitempty"`
+	MatchedPattern *string  `json:"matched_pattern,omitempty"`
+	ConflictingIDs []string `json:"conflicting_ids,omitempty"`
 }
 
 type Trace struct {
@@ -66,9 +67,9 @@ type Trace struct {
 }
 
 type Action struct {
-	Notified      []string `json:"notified"`
-	RoutedTo      *string  `json:"routed_to,omitempty"`
-	AppealEligible bool    `json:"appeal_eligible"`
+	Notified       []string `json:"notified"`
+	RoutedTo       *string  `json:"routed_to,omitempty"`
+	AppealEligible bool     `json:"appeal_eligible"`
 }
 
 // Builder constructs an audit Event for a single rule execution.
@@ -140,13 +141,30 @@ func IdempotencyKey(ruleID, subjectType, subjectID, trigger string, t time.Time)
 	return fmt.Sprintf("%s|%s|%s|%s|%s", ruleID, subjectType, subjectID, trigger, minute)
 }
 
+type execer interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}
+
 // Store persists an audit event to the append-only audit_events table (C-6).
 func Store(ctx context.Context, pool *pgxpool.Pool, ev Event) error {
+	return store(ctx, pool, ev)
+}
+
+// StoreWithExecer persists an audit event using the provided execer.
+func StoreWithExecer(ctx context.Context, db execer, ev Event) error {
+	return store(ctx, db, ev)
+}
+
+func store(ctx context.Context, db execer, ev Event) error {
+	traceTime, err := time.Parse(time.RFC3339, ev.Trace.TimestampUTC)
+	if err != nil {
+		traceTime = time.Now().UTC()
+	}
 	ikey := IdempotencyKey(
 		ev.Rule.RuleID, ev.Subject.Type, ev.Subject.ID,
-		ev.Scope.Trigger, time.Now().UTC(),
+		ev.Scope.Trigger, traceTime,
 	)
-	_, err := pool.Exec(ctx, `
+	_, err = db.Exec(ctx, `
 		INSERT INTO audit_events
 			(event_id, schema_version, payload, rule_id, subject_type, subject_id,
 			 trigger, timestamp_utc, idempotency_key)
