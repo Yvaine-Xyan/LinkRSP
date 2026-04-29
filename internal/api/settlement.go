@@ -190,7 +190,7 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 		s.errorJSON(w, http.StatusInternalServerError, "database error")
 		return
 	}
-	defer tx.Rollback(r.Context())
+	defer func() { _ = tx.Rollback(r.Context()) }()
 
 	var entryID string
 	insertErr := tx.QueryRow(r.Context(), `
