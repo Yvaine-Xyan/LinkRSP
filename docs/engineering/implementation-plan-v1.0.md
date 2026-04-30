@@ -120,7 +120,7 @@ status: 开发前决策集（可迭代）
 
 ### Phase C：Ledger 雏形 + 事件溯源（仍无 LLM）
 
-**目标**：把积分分录与审计事件做成“只追加”的可回放结构，为 S-009b、S-015/16 等依赖统计/查询的规则铺底。
+**目标**：把积分分录与审计事件做成”只追加”的可回放结构，为 S-009b、S-015/16 等依赖统计/查询的规则铺底。
 
 **交付物**：
 
@@ -128,14 +128,30 @@ status: 开发前决策集（可迭代）
 - 结算预览与提交 API（preview/commit 分离）
 - S-009b 需要的 `lrs_ledger_query` / `attestation_index_query` 查询接口（可先内部 API）
 
+**实际进度（截至 2026-05-01，核心已完成）**：
+
+| 交付物 | 状态 | 说明 |
+|--------|------|------|
+| `ledger_entries`（append-only）| ✅ 完成 | `db/migrations/001_init.sql`，双重保护（应用层 + DB Rule） |
+| 投影视图（余额为投影） | ✅ 完成 | `internal/api/internal_queries.go`，按 `created_at_utc ASC` 回放 |
+| 结算 preview / commit 分离 | ✅ 完成 | `internal/api/settlement.go`，同事务提交 ledger + audit |
+| 审计事件 + 账本同事务 | ✅ 完成 | `audit.StoreWithExecer`，降低”已落账但无审计”风险 |
+| `lrs-ledger-query` 内部查询 | ✅ 完成 | 返回 `entry_count`、窗口 `projected_balance`、逐笔投影 |
+| `attestation-index-query` 内部查询 | ✅ 完成 | 返回存证列表，供规则与统计复用 |
+| 集成测试 | ✅ 完成 | `internal/api/settlement_integration_test.go` 覆盖完整链路 |
+
+**剩余工作**（Phase C 正式收口前）：
+
+- 至少一组外部/试点环境端到端闭环验证（真实 DB + 两名真实参与者）
+
 **启动条件**：
 
-- Phase B 稳定；
-- 有至少一组真实试点愿意跑“两个真实的人 + 一次完整任务记录”的最小闭环。
+- Phase B 稳定；✅ 已满足
+- 有至少一组真实试点愿意跑”两个真实的人 + 一次完整任务记录”的最小闭环。
 
 ---
 
-### Phase D：S 类审计“无 LLM”降级运行（人工为主）
+### Phase D：S 类审计”无 LLM”降级运行（人工为主）
 
 **目标**：在无资金/无 LLM 的条件下，让 S 类规则不空转：预筛 → 人工复核 → 可回放审计。
 
@@ -144,6 +160,14 @@ status: 开发前决策集（可迭代）
 - `semantic_audit_jobs`（Postgres 轮询队列表；幂等键与审计字段齐全）
 - 预筛（trigger_words）→ 路由 `human_review_queue`
 - 人工复核界面或最小 CLI（可后置；也可先用 PR/Issue 流程承载）
+
+**实际进度（截至 2026-05-01，基础设施开建）**：
+
+| 交付物 | 状态 | 说明 |
+|--------|------|------|
+| `semantic_audit_jobs` DB 迁移 | ✅ 完成 | `db/migrations/002_semantic_audit_jobs.sql`，含幂等键、状态机、trigger_words 字段 |
+| Go 队列骨架 | ✅ 完成 | `internal/queue/semantic_queue.go`，`Enqueue` + `PreFilter` |
+| 人工复核界面 / CLI | 🔲 未开始 | 可后置；当前以 GitHub Issues `appeal` 标签承载 |
 
 **启动条件**：
 
