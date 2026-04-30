@@ -167,6 +167,8 @@ status: 开发前决策集（可迭代）
 |--------|------|------|
 | `semantic_audit_jobs` DB 迁移 | ✅ 完成 | `db/migrations/002_semantic_audit_jobs.sql`，含幂等键、状态机、trigger_words 字段 |
 | Go 队列骨架 | ✅ 完成 | `internal/queue/semantic_queue.go`，`Enqueue` + `PreFilter` |
+| `GET /api/v1/internal/semantic-audit-jobs` | ✅ 完成 | 列表接口，可按 status / rule_id / limit 过滤 |
+| `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}` | ✅ 完成 | 人工复核写回接口，更新 status / verdict / confidence |
 | 人工复核界面 / CLI | 🔲 未开始 | 可后置；当前以 GitHub Issues `appeal` 标签承载 |
 
 **启动条件**：

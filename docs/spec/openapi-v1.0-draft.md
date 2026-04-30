@@ -54,6 +54,12 @@
 - `GET /api/v1/internal/attestation-index-query`
   - 按 `uid + window_start_utc + window_end_utc` 查询存证窗口
   - 返回窗口内存证列表 `items[]`，供规则与统计查询复用
+- `GET /api/v1/internal/semantic-audit-jobs`
+  - 可选过滤：`status`（默认 `pending`）、`rule_id`、`limit`（默认 50，最大 200）
+  - 返回 `{"jobs": [...], "total": N}`，每条 job 含 trigger_words、routed_to、verdict、confidence
+- `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}`
+  - 人工复核写回：可更新 `status`、`verdict`（PASS/BLOCK/SKIP）、`confidence`（0–1）
+  - 幂等安全：重复 PATCH 同字段无副作用；返回更新后完整 job 对象
 
 ### 2.6 Health（健康检查）
 
