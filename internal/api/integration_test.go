@@ -65,7 +65,7 @@ func cleanupDatabase(t *testing.T, pool *db.Pool) {
 	defer cancel()
 
 	_, err := pool.Exec(ctx, `
-		TRUNCATE TABLE audit_events, ledger_entries, attestations, tasks
+		TRUNCATE TABLE semantic_audit_jobs, audit_events, ledger_entries, attestations, tasks
 		RESTART IDENTITY CASCADE`)
 	if err != nil {
 		t.Fatalf("truncate test tables: %v", err)
