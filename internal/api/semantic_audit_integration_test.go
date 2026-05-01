@@ -87,3 +87,76 @@ func TestEnqueueSemanticAuditJob_AndStats(t *testing.T) {
 		t.Fatalf("pending count: got %d want 1; all=%v", decoded.CountsByStatus["pending"], decoded.CountsByStatus)
 	}
 }
+
+func TestSemanticAuditJobReplay_TaskSubjectBundle(t *testing.T) {
+	server, cleanup := newIntegrationServer(t)
+	defer cleanup()
+
+	mux := newIntegrationMux(server)
+
+	// Create a real task + attestation + settlement so replay can pull linked evidence.
+	createTaskBody := `{
+		"uid_submitter":"uid-replay-001",
+		"description_text":"replay task",
+		"start_time_utc":"2026-04-27T08:00:00Z",
+		"end_time_utc":"2026-04-27T08:30:00Z"
+	}`
+	createTaskResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks", createTaskBody)
+	if createTaskResp.Code != http.StatusCreated {
+		t.Fatalf("create task: got %d want %d; body=%s", createTaskResp.Code, http.StatusCreated, createTaskResp.Body.String())
+	}
+	task := decodeJSON[createdTaskResponse](t, createTaskResp)
+
+	createAttestationBody := `{
+		"verification_level":1,
+		"timestamp_utc":"2026-04-27T08:31:00Z",
+		"location_hash":"loc-hash-replay"
+	}`
+	attResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks/"+task.TaskID+"/attestations", createAttestationBody)
+	if attResp.Code != http.StatusCreated {
+		t.Fatalf("create attestation: got %d want %d; body=%s", attResp.Code, http.StatusCreated, attResp.Body.String())
+	}
+
+	commitResp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/tasks/"+task.TaskID+"/settlement/commit", "")
+	if commitResp.Code != http.StatusOK {
+		t.Fatalf("commit settlement: got %d want %d; body=%s", commitResp.Code, http.StatusOK, commitResp.Body.String())
+	}
+
+	enqueueBody := `{
+		"rule_id":"S-014",
+		"subject_type":"task",
+		"subject_id":"` + task.TaskID + `",
+		"text":"replay seed text",
+		"trigger_words":["replay"]
+	}`
+	enqueue := performJSONRequest(t, mux, http.MethodPost, "/api/v1/internal/semantic-audit-jobs/enqueue", enqueueBody)
+	if enqueue.Code != http.StatusAccepted {
+		t.Fatalf("enqueue: got %d want %d; body=%s", enqueue.Code, http.StatusAccepted, enqueue.Body.String())
+	}
+
+	list := performJSONRequest(t, mux, http.MethodGet, "/api/v1/internal/semantic-audit-jobs?status=pending&limit=5", "")
+	if list.Code != http.StatusOK {
+		t.Fatalf("list: got %d want %d; body=%s", list.Code, http.StatusOK, list.Body.String())
+	}
+	jobs := decodeJSON[listSemanticAuditJobsResponse](t, list)
+	if jobs.Total != 1 || len(jobs.Jobs) != 1 {
+		t.Fatalf("expected 1 job, got total=%d len=%d", jobs.Total, len(jobs.Jobs))
+	}
+	jobID := jobs.Jobs[0].JobID
+
+	// Write-back to generate a writeback audit event for replay bundle.
+	patch := performJSONRequest(t, mux, http.MethodPatch, "/api/v1/internal/semantic-audit-jobs/"+jobID, `{"status":"done","verdict":"PASS","confidence":0.7}`)
+	if patch.Code != http.StatusOK {
+		t.Fatalf("patch: got %d want %d; body=%s", patch.Code, http.StatusOK, patch.Body.String())
+	}
+
+	replay := performJSONRequest(t, mux, http.MethodGet, "/api/v1/internal/semantic-audit-jobs/"+jobID+"/replay", "")
+	if replay.Code != http.StatusOK {
+		t.Fatalf("replay: got %d want %d; body=%s", replay.Code, http.StatusOK, replay.Body.String())
+	}
+	var bundle map[string]any
+	_ = json.Unmarshal(replay.Body.Bytes(), &bundle)
+	if bundle["job"] == nil || bundle["writeback_audit_events"] == nil {
+		t.Fatalf("replay bundle missing required fields: %v", bundle)
+	}
+}

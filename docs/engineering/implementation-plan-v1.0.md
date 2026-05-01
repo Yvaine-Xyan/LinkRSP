@@ -182,6 +182,7 @@ status: 开发前决策集（可迭代）
 | `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}` | ✅ 完成 | 人工复核写回接口，更新 status / verdict / confidence |
 | 写回审计事件落库 | ✅ 完成 | PATCH 写回同时追加 `audit_event`（subject_type=`semantic_audit_job`） |
 | 最小复核 CLI | ✅ 完成 | `cmd/semreview`：list/patch 队列，用于运行通路（不定义 SOP） |
+| 证据回放包接口 | ✅ 完成 | `GET /api/v1/internal/semantic-audit-jobs/{job_id}/replay`，用于复核/运维回放证据 |
 
 **启动条件**：
 

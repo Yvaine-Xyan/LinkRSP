@@ -63,6 +63,8 @@
   - 内部入队入口（供自治工具/脚本/运营触发）
   - 请求体：`rule_id`、`subject_type`、`subject_id`、`text_ref`/`text`、可选 `trigger_words`
   - 返回：accepted + routed_to + trigger_words（预筛命中子集）
+- `GET /api/v1/internal/semantic-audit-jobs/{job_id}/replay`
+  - 证据回放包（Phase D 运维/人工复核视角）：返回 job、写回审计事件、以及（当 subject_type=task）关联任务的存证/账本/审计事件摘要
 - `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}`
   - 人工复核写回：可更新 `status`、`verdict`（PASS/BLOCK/SKIP）、`confidence`（0–1）
   - 幂等安全：重复 PATCH 同字段无副作用；返回更新后完整 job 对象

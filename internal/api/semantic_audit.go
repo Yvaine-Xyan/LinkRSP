@@ -54,6 +54,15 @@ type semanticAuditJobStatsResponse struct {
 	OldestHumanRev *string        `json:"oldest_human_review_utc,omitempty"`
 }
 
+type semanticAuditJobReplayResponse struct {
+	Job            semanticAuditJobItem `json:"job"`
+	WriteBackAudit []auditEventItem     `json:"writeback_audit_events"`
+	Subject        any                  `json:"subject,omitempty"`
+	SubjectAudit   []auditEventItem     `json:"subject_audit_events,omitempty"`
+	LedgerEntries  []any                `json:"ledger_entries,omitempty"`
+	Attestations   []any                `json:"attestations,omitempty"`
+}
+
 var validJobStatuses = map[string]bool{
 	"pending": true, "processing": true,
 	"human_review": true, "done": true, "skipped": true,
@@ -327,6 +336,217 @@ func (s *Server) semanticAuditJobStats(w http.ResponseWriter, r *http.Request) {
 		resp.OldestHumanRev = &v
 	}
 	s.writeJSON(w, http.StatusOK, resp)
+}
+
+// semanticAuditJobReplay handles GET /api/v1/internal/semantic-audit-jobs/{job_id}/replay
+// It returns an evidence bundle for human/ops replay: the job, its write-back audit events,
+// and (when subject_type=task) the linked task/audit/attestations/ledger.
+func (s *Server) semanticAuditJobReplay(w http.ResponseWriter, r *http.Request) {
+	jobID := r.PathValue("job_id")
+	if _, err := uuid.Parse(jobID); err != nil {
+		s.errorJSON(w, http.StatusBadRequest, "invalid job_id: must be UUID")
+		return
+	}
+
+	row := s.Pool.QueryRow(r.Context(), `
+		SELECT job_id::TEXT, rule_id, subject_type, subject_id, text_ref,
+		       status, verdict, confidence::FLOAT8, trigger_words, routed_to,
+		       idempotency_key, created_at_utc, updated_at_utc
+		FROM semantic_audit_jobs
+		WHERE job_id = $1::UUID`, jobID)
+	job, err := scanSemanticAuditJobRow(row)
+	if err != nil {
+		if isNotFound(err) {
+			s.errorJSON(w, http.StatusNotFound, "job not found")
+			return
+		}
+		s.Logger.Error("replay fetch job", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	writebackAudit, err := s.fetchAuditEvents(r, "semantic_audit_job", job.JobID, job.RuleID, 200)
+	if err != nil {
+		s.Logger.Error("replay fetch writeback audit", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	resp := semanticAuditJobReplayResponse{
+		Job:            job,
+		WriteBackAudit: writebackAudit,
+	}
+
+	// For now we only expand task subjects; other subject types remain opaque but replayable
+	// via the job record + writeback audit events.
+	if job.SubjectType != "task" {
+		s.writeJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	// Task snapshot.
+	var task struct {
+		TaskID          string  `json:"task_id"`
+		UIDSubmitter    string  `json:"uid_submitter"`
+		CommunityID     *string `json:"community_id,omitempty"`
+		DescriptionText string  `json:"description_text"`
+		StartTimeUTC    string  `json:"start_time_utc"`
+		EndTimeUTC      string  `json:"end_time_utc"`
+		LocationHash    *string `json:"location_hash,omitempty"`
+		CreatedAtUTC    string  `json:"created_at_utc"`
+	}
+	var start, end, createdAt time.Time
+	err = s.Pool.QueryRow(r.Context(), `
+		SELECT task_id::TEXT, uid_submitter, community_id::TEXT,
+		       description_text, start_time_utc, end_time_utc,
+		       location_hash, created_at_utc
+		FROM tasks
+		WHERE task_id = $1::UUID`, job.SubjectID,
+	).Scan(
+		&task.TaskID, &task.UIDSubmitter, &task.CommunityID,
+		&task.DescriptionText, &start, &end,
+		&task.LocationHash, &createdAt,
+	)
+	if err == nil {
+		task.StartTimeUTC = start.UTC().Format(time.RFC3339)
+		task.EndTimeUTC = end.UTC().Format(time.RFC3339)
+		task.CreatedAtUTC = createdAt.UTC().Format(time.RFC3339)
+		resp.Subject = task
+	}
+
+	subjectAudit, err := s.fetchAuditEvents(r, "task", job.SubjectID, "", 200)
+	if err != nil {
+		s.Logger.Error("replay fetch subject audit", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	resp.SubjectAudit = subjectAudit
+
+	// Ledger entries for the task (if any).
+	ledgerRows, err := s.Pool.Query(r.Context(), `
+		SELECT entry_id::TEXT, task_id::TEXT, uid, credits_delta::FLOAT8, created_at_utc, idempotency_key
+		FROM ledger_entries
+		WHERE task_id = $1::UUID
+		ORDER BY created_at_utc ASC`, job.SubjectID)
+	if err != nil {
+		s.Logger.Error("replay fetch ledger entries", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	defer ledgerRows.Close()
+	for ledgerRows.Next() {
+		var item struct {
+			EntryID        string    `json:"entry_id"`
+			TaskID         string    `json:"task_id"`
+			UID            string    `json:"uid"`
+			CreditsDelta   float64   `json:"credits_delta"`
+			CreatedAtUTC   string    `json:"created_at_utc"`
+			IdempotencyKey string    `json:"idempotency_key"`
+			CreatedAtRaw   time.Time `json:"-"`
+		}
+		if err := ledgerRows.Scan(&item.EntryID, &item.TaskID, &item.UID, &item.CreditsDelta, &item.CreatedAtRaw, &item.IdempotencyKey); err != nil {
+			s.Logger.Error("replay scan ledger entry", "job_id", jobID, "error", err)
+			s.errorJSON(w, http.StatusInternalServerError, "database error")
+			return
+		}
+		item.CreatedAtUTC = item.CreatedAtRaw.UTC().Format(time.RFC3339)
+		resp.LedgerEntries = append(resp.LedgerEntries, item)
+	}
+	if err := ledgerRows.Err(); err != nil {
+		s.Logger.Error("replay rows ledger entry", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	// Attestations for the task.
+	attRows, err := s.Pool.Query(r.Context(), `
+		SELECT attestation_id::TEXT, task_id::TEXT, verification_level,
+		       timestamp_utc, location_hash, evidence_ref, created_at_utc
+		FROM attestations
+		WHERE task_id = $1::UUID
+		ORDER BY created_at_utc ASC`, job.SubjectID)
+	if err != nil {
+		s.Logger.Error("replay fetch attestations", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	defer attRows.Close()
+	for attRows.Next() {
+		var item struct {
+			AttestationID     string    `json:"attestation_id"`
+			TaskID            string    `json:"task_id"`
+			VerificationLevel int       `json:"verification_level"`
+			TimestampUTC      string    `json:"timestamp_utc"`
+			LocationHash      *string   `json:"location_hash,omitempty"`
+			EvidenceRef       *string   `json:"evidence_ref,omitempty"`
+			CreatedAtUTC      string    `json:"created_at_utc"`
+			TimestampRaw      time.Time `json:"-"`
+			CreatedAtRaw      time.Time `json:"-"`
+		}
+		if err := attRows.Scan(
+			&item.AttestationID, &item.TaskID, &item.VerificationLevel,
+			&item.TimestampRaw, &item.LocationHash, &item.EvidenceRef, &item.CreatedAtRaw,
+		); err != nil {
+			s.Logger.Error("replay scan attestation", "job_id", jobID, "error", err)
+			s.errorJSON(w, http.StatusInternalServerError, "database error")
+			return
+		}
+		item.TimestampUTC = item.TimestampRaw.UTC().Format(time.RFC3339)
+		item.CreatedAtUTC = item.CreatedAtRaw.UTC().Format(time.RFC3339)
+		resp.Attestations = append(resp.Attestations, item)
+	}
+	if err := attRows.Err(); err != nil {
+		s.Logger.Error("replay rows attestation", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	s.writeJSON(w, http.StatusOK, resp)
+}
+
+func (s *Server) fetchAuditEvents(r *http.Request, subjectType, subjectID, ruleID string, limit int) ([]auditEventItem, error) {
+	args := []any{}
+	where := "WHERE subject_type = $1 AND subject_id = $2"
+	args = append(args, subjectType, subjectID)
+	n := 3
+	if ruleID != "" {
+		where += " AND rule_id = $" + strconv.Itoa(n)
+		args = append(args, ruleID)
+		n++
+	}
+	args = append(args, limit)
+
+	rows, err := s.Pool.Query(r.Context(),
+		"SELECT event_id::TEXT, schema_version, rule_id, subject_type, subject_id, "+
+			"trigger, timestamp_utc, payload, created_at_utc "+
+			"FROM audit_events "+where+
+			" ORDER BY timestamp_utc DESC "+
+			"LIMIT $"+strconv.Itoa(n),
+		args...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []auditEventItem
+	for rows.Next() {
+		var item auditEventItem
+		var ts, createdAt time.Time
+		var payload []byte
+		if err := rows.Scan(
+			&item.EventID, &item.SchemaVersion, &item.RuleID,
+			&item.SubjectType, &item.SubjectID, &item.Trigger,
+			&ts, &payload, &createdAt,
+		); err != nil {
+			return nil, err
+		}
+		item.TimestampUTC = ts.UTC().Format(time.RFC3339)
+		item.CreatedAtUTC = createdAt.UTC().Format(time.RFC3339)
+		item.Payload = payload
+		out = append(out, item)
+	}
+	return out, rows.Err()
 }
 
 func (s *Server) storeSemanticWritebackAuditEvent(r *http.Request, tx pgx.Tx, job semanticAuditJobItem) error {
