@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
+	"github.com/Yvaine-Xyan/linkrsp/internal/queue"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -36,6 +37,21 @@ type patchSemanticAuditJobRequest struct {
 	Status     *string  `json:"status"`
 	Verdict    *string  `json:"verdict"`
 	Confidence *float64 `json:"confidence"`
+}
+
+type enqueueSemanticAuditJobRequest struct {
+	RuleID       string   `json:"rule_id"`
+	SubjectType  string   `json:"subject_type"`
+	SubjectID    string   `json:"subject_id"`
+	TextRef      *string  `json:"text_ref,omitempty"`
+	Text         *string  `json:"text,omitempty"`
+	TriggerWords []string `json:"trigger_words,omitempty"`
+}
+
+type semanticAuditJobStatsResponse struct {
+	CountsByStatus map[string]int `json:"counts_by_status"`
+	OldestPending  *string        `json:"oldest_pending_utc,omitempty"`
+	OldestHumanRev *string        `json:"oldest_human_review_utc,omitempty"`
 }
 
 var validJobStatuses = map[string]bool{
@@ -202,6 +218,115 @@ func (s *Server) patchSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.writeJSON(w, http.StatusOK, item)
+}
+
+// enqueueSemanticAuditJob handles POST /api/v1/internal/semantic-audit-jobs/enqueue
+// It is an internal ingestion point used by operators or community-run tooling.
+// The system does not prescribe community SOP; it only provides an auditable queue path.
+func (s *Server) enqueueSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
+	var req enqueueSemanticAuditJobRequest
+	if err := s.decodeBody(r, &req); err != nil {
+		s.errorJSON(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.RuleID == "" || req.SubjectType == "" || req.SubjectID == "" {
+		s.errorJSON(w, http.StatusBadRequest, "rule_id, subject_type, subject_id are required")
+		return
+	}
+	if req.TextRef == nil && req.Text == nil {
+		s.errorJSON(w, http.StatusBadRequest, "at least one of text_ref or text is required")
+		return
+	}
+
+	// Pre-filter is optional: caller may pass trigger_words, or rely on routing defaults.
+	var matched []string
+	if req.Text != nil && len(req.TriggerWords) > 0 {
+		matched = queue.PreFilter(*req.Text, req.TriggerWords)
+	} else if len(req.TriggerWords) > 0 {
+		// Without raw text we treat supplied trigger_words as "matched".
+		matched = req.TriggerWords
+	}
+
+	routed := queue.Route(matched)
+	textRef := ""
+	if req.TextRef != nil {
+		textRef = *req.TextRef
+	} else if req.Text != nil {
+		// Store the raw text as text_ref for Phase D minimalism; Phase E should move this
+		// to an object store reference or hashed pointer.
+		textRef = *req.Text
+	}
+
+	if err := queue.Enqueue(r.Context(), s.Pool, queue.Job{
+		RuleID:      req.RuleID,
+		SubjectType: req.SubjectType,
+		SubjectID:   req.SubjectID,
+		TextRef:     textRef,
+		RoutedTo:    routed,
+	}, matched); err != nil {
+		s.Logger.Error("enqueue semantic audit job", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	s.writeJSON(w, http.StatusAccepted, map[string]any{
+		"result":        "accepted",
+		"rule_id":       req.RuleID,
+		"subject_type":  req.SubjectType,
+		"subject_id":    req.SubjectID,
+		"routed_to":     string(routed),
+		"trigger_words": matched,
+	})
+}
+
+// semanticAuditJobStats handles GET /api/v1/internal/semantic-audit-jobs/stats
+// It provides minimal queue observability for Phase D operations.
+func (s *Server) semanticAuditJobStats(w http.ResponseWriter, r *http.Request) {
+	rows, err := s.Pool.Query(r.Context(), `
+		SELECT status, COUNT(*)::INT
+		FROM semantic_audit_jobs
+		GROUP BY status`)
+	if err != nil {
+		s.Logger.Error("semantic audit job stats", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	defer rows.Close()
+
+	counts := map[string]int{}
+	for rows.Next() {
+		var status string
+		var count int
+		if err := rows.Scan(&status, &count); err != nil {
+			s.Logger.Error("scan semantic audit job stats", "error", err)
+			s.errorJSON(w, http.StatusInternalServerError, "database error")
+			return
+		}
+		counts[status] = count
+	}
+	if err := rows.Err(); err != nil {
+		s.Logger.Error("rows error semantic audit job stats", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	var oldestPending *time.Time
+	_ = s.Pool.QueryRow(r.Context(), `
+		SELECT MIN(created_at_utc) FROM semantic_audit_jobs WHERE status='pending'`).Scan(&oldestPending)
+	var oldestHuman *time.Time
+	_ = s.Pool.QueryRow(r.Context(), `
+		SELECT MIN(created_at_utc) FROM semantic_audit_jobs WHERE status='human_review'`).Scan(&oldestHuman)
+
+	resp := semanticAuditJobStatsResponse{CountsByStatus: counts}
+	if oldestPending != nil {
+		v := oldestPending.UTC().Format(time.RFC3339)
+		resp.OldestPending = &v
+	}
+	if oldestHuman != nil {
+		v := oldestHuman.UTC().Format(time.RFC3339)
+		resp.OldestHumanRev = &v
+	}
+	s.writeJSON(w, http.StatusOK, resp)
 }
 
 func (s *Server) storeSemanticWritebackAuditEvent(r *http.Request, tx pgx.Tx, job semanticAuditJobItem) error {

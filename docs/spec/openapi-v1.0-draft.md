@@ -57,9 +57,16 @@
 - `GET /api/v1/internal/semantic-audit-jobs`
   - 可选过滤：`status`（默认 `pending`）、`rule_id`、`limit`（默认 50，最大 200）
   - 返回 `{"jobs": [...], "total": N}`，每条 job 含 trigger_words、routed_to、verdict、confidence
+- `GET /api/v1/internal/semantic-audit-jobs/stats`
+  - 队列最小统计（Phase D 运维视角）：按 status 聚合计数 + 最早 pending/human_review 时间
+- `POST /api/v1/internal/semantic-audit-jobs/enqueue`
+  - 内部入队入口（供自治工具/脚本/运营触发）
+  - 请求体：`rule_id`、`subject_type`、`subject_id`、`text_ref`/`text`、可选 `trigger_words`
+  - 返回：accepted + routed_to + trigger_words（预筛命中子集）
 - `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}`
   - 人工复核写回：可更新 `status`、`verdict`（PASS/BLOCK/SKIP）、`confidence`（0–1）
   - 幂等安全：重复 PATCH 同字段无副作用；返回更新后完整 job 对象
+  - 写回落库：写回同时追加一条 `audit_event`（subject_type=`semantic_audit_job`，便于回放）
 
 ### 2.6 Health（健康检查）
 

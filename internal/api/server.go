@@ -41,6 +41,8 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/internal/lrs-ledger-query", s.requireSharedSecret(s.lrsLedgerQuery))
 	mux.HandleFunc("GET /api/v1/internal/attestation-index-query", s.requireSharedSecret(s.attestationIndexQuery))
 	mux.HandleFunc("GET /api/v1/internal/semantic-audit-jobs", s.requireSharedSecret(s.listSemanticAuditJobs))
+	mux.HandleFunc("GET /api/v1/internal/semantic-audit-jobs/stats", s.requireSharedSecret(s.semanticAuditJobStats))
+	mux.HandleFunc("POST /api/v1/internal/semantic-audit-jobs/enqueue", s.requireSharedSecret(s.enqueueSemanticAuditJob))
 	mux.HandleFunc("PATCH /api/v1/internal/semantic-audit-jobs/{job_id}", s.requireSharedSecret(s.patchSemanticAuditJob))
 }
 

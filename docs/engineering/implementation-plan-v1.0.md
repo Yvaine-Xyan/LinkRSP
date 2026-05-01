@@ -168,6 +168,7 @@ status: 开发前决策集（可迭代）
 - `semantic_audit_jobs`（Postgres 轮询队列表；幂等键与审计字段齐全）
 - 预筛（trigger_words）→ 路由 `human_review_queue`
 - 人工复核界面或最小 CLI（可后置；也可先用 PR/Issue 流程承载）
+- 队列运维最小观测与节流入口（不定义社区 SOP，仅提供通路与统计）
 
 **实际进度（截至 2026-05-01，基础设施开建）**：
 
@@ -176,7 +177,10 @@ status: 开发前决策集（可迭代）
 | `semantic_audit_jobs` DB 迁移 | ✅ 完成 | `db/migrations/002_semantic_audit_jobs.sql`，含幂等键、状态机、trigger_words 字段 |
 | Go 队列骨架 | ✅ 完成 | `internal/queue/semantic_queue.go`，`Enqueue` + `PreFilter` |
 | `GET /api/v1/internal/semantic-audit-jobs` | ✅ 完成 | 列表接口，可按 status / rule_id / limit 过滤 |
+| `GET /api/v1/internal/semantic-audit-jobs/stats` | ✅ 完成 | 队列最小统计：按 status 聚合 + 最早 pending/human_review |
+| `POST /api/v1/internal/semantic-audit-jobs/enqueue` | ✅ 完成 | 内部入队入口：自治工具/脚本触发，预筛命中词路由 |
 | `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}` | ✅ 完成 | 人工复核写回接口，更新 status / verdict / confidence |
+| 写回审计事件落库 | ✅ 完成 | PATCH 写回同时追加 `audit_event`（subject_type=`semantic_audit_job`） |
 | 人工复核界面 / CLI | 🔲 未开始 | 可后置；当前以 GitHub Issues `appeal` 标签承载 |
 
 **启动条件**：

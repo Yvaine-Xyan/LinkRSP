@@ -59,3 +59,31 @@ func TestPatchSemanticAuditJob_PersistsWritebackAuditEvent(t *testing.T) {
 		t.Fatalf("payload.verdict.confidence: got %v want 0.7", verdict["confidence"])
 	}
 }
+
+func TestEnqueueSemanticAuditJob_AndStats(t *testing.T) {
+	server, cleanup := newIntegrationServer(t)
+	defer cleanup()
+
+	mux := newIntegrationMux(server)
+
+	enqueueBody := `{
+		"rule_id":"S-014",
+		"subject_type":"task",
+		"subject_id":"task-seed-002",
+		"text":"this is a seed text",
+		"trigger_words":["seed","foo"]
+	}`
+	resp := performJSONRequest(t, mux, http.MethodPost, "/api/v1/internal/semantic-audit-jobs/enqueue", enqueueBody)
+	if resp.Code != http.StatusAccepted {
+		t.Fatalf("enqueue: got %d want %d; body=%s", resp.Code, http.StatusAccepted, resp.Body.String())
+	}
+
+	stats := performJSONRequest(t, mux, http.MethodGet, "/api/v1/internal/semantic-audit-jobs/stats", "")
+	if stats.Code != http.StatusOK {
+		t.Fatalf("stats: got %d want %d; body=%s", stats.Code, http.StatusOK, stats.Body.String())
+	}
+	decoded := decodeJSON[semanticAuditJobStatsResponse](t, stats)
+	if decoded.CountsByStatus["pending"] != 1 {
+		t.Fatalf("pending count: got %d want 1; all=%v", decoded.CountsByStatus["pending"], decoded.CountsByStatus)
+	}
+}
