@@ -1,11 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type semanticAuditJobItem struct {
@@ -142,13 +145,22 @@ func (s *Server) patchSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := s.Pool.Exec(r.Context(), `
-		UPDATE semantic_audit_jobs
-		SET    status         = COALESCE($1, status),
-		       verdict        = COALESCE($2, verdict),
-		       confidence     = COALESCE($3, confidence),
-		       updated_at_utc = NOW()
-		WHERE  job_id = $4::UUID`,
+	// Use a transaction so the human write-back and its audit-event record are atomic.
+	tx, err := s.Pool.Begin(r.Context())
+	if err != nil {
+		s.Logger.Error("begin patch semantic audit job", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+	defer func() { _ = tx.Rollback(r.Context()) }()
+
+	result, err := tx.Exec(r.Context(), `
+			UPDATE semantic_audit_jobs
+			SET    status         = COALESCE($1, status),
+			       verdict        = COALESCE($2, verdict),
+			       confidence     = COALESCE($3, confidence),
+			       updated_at_utc = NOW()
+			WHERE  job_id = $4::UUID`,
 		req.Status, req.Verdict, req.Confidence, jobID,
 	)
 	if err != nil {
@@ -161,12 +173,12 @@ func (s *Server) patchSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := s.Pool.QueryRow(r.Context(), `
-		SELECT job_id::TEXT, rule_id, subject_type, subject_id, text_ref,
-		       status, verdict, confidence::FLOAT8, trigger_words, routed_to,
-		       idempotency_key, created_at_utc, updated_at_utc
-		FROM   semantic_audit_jobs
-		WHERE  job_id = $1::UUID`, jobID,
+	row := tx.QueryRow(r.Context(), `
+			SELECT job_id::TEXT, rule_id, subject_type, subject_id, text_ref,
+			       status, verdict, confidence::FLOAT8, trigger_words, routed_to,
+			       idempotency_key, created_at_utc, updated_at_utc
+			FROM   semantic_audit_jobs
+			WHERE  job_id = $1::UUID`, jobID,
 	)
 	item, err := scanSemanticAuditJobRow(row)
 	if err != nil {
@@ -175,7 +187,74 @@ func (s *Server) patchSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Store an audit event for the write-back. This is intentionally job-scoped so it is
+	// replayable regardless of the subject type (task / ipo_application / etc.).
+	if err := s.storeSemanticWritebackAuditEvent(r, tx, item); err != nil {
+		s.Logger.Error("store semantic writeback audit event", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil && err != pgx.ErrTxClosed {
+		s.Logger.Error("commit patch semantic audit job", "job_id", jobID, "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
 	s.writeJSON(w, http.StatusOK, item)
+}
+
+func (s *Server) storeSemanticWritebackAuditEvent(r *http.Request, tx pgx.Tx, job semanticAuditJobItem) error {
+	// If the patch did not result in a verdict, we still record a PASS write-back event
+	// only when the job has reached a terminal state (done/skipped). This keeps noise low
+	// while preserving replayability for actual decisions.
+	terminal := job.Status == "done" || job.Status == "skipped"
+	if job.Verdict == nil && !terminal {
+		return nil
+	}
+
+	category := "semantic_audit"
+	trigger := "periodic_audit"
+
+	// Map queue verdicts to audit-event verdicts. SKIP means "no decision needed";
+	// we store it as PASS with a matched_pattern note.
+	verdict := audit.VerdictPass
+	severity := "warn"
+	matched := fmt.Sprintf("semantic write-back: status=%s", job.Status)
+	if job.Verdict != nil {
+		matched = fmt.Sprintf("semantic write-back: status=%s verdict=%s", job.Status, *job.Verdict)
+		switch *job.Verdict {
+		case "PASS":
+			verdict = audit.VerdictPass
+			severity = "warn"
+		case "BLOCK":
+			verdict = audit.VerdictBlock
+			severity = "block"
+		case "SKIP":
+			verdict = audit.VerdictPass
+			severity = "warn"
+		}
+	}
+
+	builder := audit.NewBuilder(job.RuleID, category, trigger).WithSeverity(severity)
+	var ev audit.Event
+	switch verdict {
+	case audit.VerdictBlock:
+		ev = builder.BuildBlock("semantic_audit_job", job.JobID, nil, matched, []string{"review"})
+	default:
+		ev = builder.BuildPass("semantic_audit_job", job.JobID)
+		ev.Evidence.MatchedPattern = &matched
+	}
+
+	// Preserve linkage for downstream replay: secondary_id points back to the original subject.
+	ev.Subject.SecondaryID = &job.SubjectID
+
+	// For semantic audits, confidence is meaningful and should be stored when present.
+	if job.Confidence != nil {
+		ev.Verdict.Confidence = job.Confidence
+	}
+
+	return audit.StoreWithExecer(r.Context(), tx, ev)
 }
 
 // scanner abstracts pgx.Rows and pgx.Row so scanSemanticAuditJobRow can serve both.
@@ -202,4 +281,3 @@ func scanSemanticAuditJobRow(s scanner) (semanticAuditJobItem, error) {
 	}
 	return item, nil
 }
-
