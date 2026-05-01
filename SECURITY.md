@@ -4,7 +4,7 @@
 
 Please report security vulnerabilities **privately** to:
 
-**xyan8921@gmail.com**
+**yvaine@linkrsp.com**
 
 Include a short description, affected component (if known), and steps to reproduce. Do not file public issues for undisclosed vulnerabilities.
 

@@ -136,7 +136,7 @@ Backend language is **locked to Go** for LinkRSP core services (see [`docs/engin
 ## Contact
 
 Yvaine He — Founder & Architect  
-xyan8921@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
+yvaine@linkrsp.com · [hdgp-protocol.com](https://hdgp-protocol.com)
 
 ---
 
@@ -257,7 +257,7 @@ Credits_delta = (T_phy × V_bit) × Clip((D_base + ΣW_risk) / K_global, 0.8, 3.
 ## 联系
 
 Yvaine He · Founder & Architect  
-xyan8921@gmail.com · [hdgp-protocol.com](https://hdgp-protocol.com)
+yvaine@linkrsp.com · [hdgp-protocol.com](https://hdgp-protocol.com)
 
 ---
 
