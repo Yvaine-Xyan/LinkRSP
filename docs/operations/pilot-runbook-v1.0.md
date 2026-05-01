@@ -171,4 +171,4 @@ IPO 跃迁 (N→S)
 
 ---
 
-_维护：试点完成后请将结果（任务 ID、积分结果、参与者匿名化）记录到 `docs/operations/appeal-log.md` 或新建 `docs/operations/pilot-record-v1.md`。_
+_维护：试点完成后请将结果（任务 ID、积分结果、参与者匿名化）记录到 `docs/operations/appeal-log.md` 或新建 `docs/operations/pilot-record-v1.md`。本仓库已生成一份收口记录：`docs/operations/pilot-record-v1.md`。_

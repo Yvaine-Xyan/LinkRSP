@@ -122,13 +122,15 @@ status: 开发前决策集（可迭代）
 
 **目标**：把积分分录与审计事件做成”只追加”的可回放结构，为 S-009b、S-015/16 等依赖统计/查询的规则铺底。
 
+**完成日期：2026-05-02**
+
 **交付物**：
 
 - `ledger_entries`（append-only）+ 投影视图（余额为投影，不为唯一真相）
 - 结算预览与提交 API（preview/commit 分离）
 - S-009b 需要的 `lrs_ledger_query` / `attestation_index_query` 查询接口（可先内部 API）
 
-**实际进度（截至 2026-05-01，核心已完成）**：
+**实际进度（截至 2026-05-02，已收口）**：
 
 | 交付物 | 状态 | 说明 |
 |--------|------|------|
@@ -142,7 +144,13 @@ status: 开发前决策集（可迭代）
 
 **剩余工作**（Phase C 正式收口前）：
 
-- 至少一组外部/试点环境端到端闭环验证（真实 DB + 两名真实参与者）
+- ✅ 已完成：至少一组外部/试点环境端到端闭环验证（真实 DB + 两名真实参与者）
+  - 记录：`docs/operations/pilot-record-v1.md`
+  - Runbook：`docs/operations/pilot-runbook-v1.0.md`
+
+**运维补充**：
+
+- DB keepalive（防 Supabase 7d 无写入冻结）：`db/migrations/003_ops_heartbeats.sql` + `.github/workflows/db-keepalive.yml`
 
 **启动条件**：
 
