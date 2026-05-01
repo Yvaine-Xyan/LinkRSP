@@ -133,7 +133,13 @@ func (s *Server) createAttestation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = audit.Store(r.Context(), s.Pool, res2.Event)
+	// Store both user-scoped and task-scoped R-009 events.
 	_ = audit.Store(r.Context(), s.Pool, res9.AuditEvent)
+	ev9 := res9.AuditEvent
+	ev9.EventID = uuid.New().String()
+	ev9.Trace.TraceID = uuid.New().String()
+	ev9.Subject = audit.Subject{Type: "task", ID: taskID, SecondaryID: &uid}
+	_ = audit.Store(r.Context(), s.Pool, ev9)
 
 	s.writeJSON(w, http.StatusCreated, attestationResponse{
 		AttestationID:     attestationID,

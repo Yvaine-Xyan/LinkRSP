@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -12,7 +13,9 @@ import (
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r005"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r006"
 	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r010"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // vBitMap implements V_bit from the LRS-1.0 algorithm spec §2.1.
@@ -144,7 +147,13 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 		s.errorJSON(w, http.StatusInternalServerError, "rule check error")
 		return
 	}
-	auditEvents = append(auditEvents, res6.AuditEvent)
+	// Store a task-scoped event so /api/v1/audit-events?subject_type=task&subject_id=...
+	// includes R-006 in the same subject stream as other task-level rules.
+	ev6 := res6.AuditEvent
+	ev6.EventID = uuid.New().String()
+	ev6.Trace.TraceID = uuid.New().String()
+	ev6.Subject = audit.Subject{Type: "task", ID: taskID, SecondaryID: &uid}
+	auditEvents = append(auditEvents, ev6)
 
 	tPhy := end.Sub(start).Minutes()
 	formula := computeCredits(tPhy, verificationLevel)
@@ -160,7 +169,12 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 		s.errorJSON(w, http.StatusInternalServerError, "rule check error")
 		return
 	}
-	auditEvents = append(auditEvents, res10.AuditEvent)
+	// Store a task-scoped event so /api/v1/audit-events?... includes R-010.
+	ev10 := res10.AuditEvent
+	ev10.EventID = uuid.New().String()
+	ev10.Trace.TraceID = uuid.New().String()
+	ev10.Subject = audit.Subject{Type: "task", ID: taskID, SecondaryID: &uid}
+	auditEvents = append(auditEvents, ev10)
 
 	resp := settlementResponse{
 		TaskID:       taskID,
@@ -193,16 +207,27 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 	defer func() { _ = tx.Rollback(r.Context()) }()
 
 	var entryID string
+	if _, err := tx.Exec(r.Context(), "SAVEPOINT sp_ledger_insert"); err != nil {
+		s.Logger.Error("savepoint ledger insert", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
+	}
 	insertErr := tx.QueryRow(r.Context(), `
 		INSERT INTO ledger_entries
 			(task_id, uid, credits_delta, formula_snapshot, idempotency_key)
 		VALUES ($1::UUID, $2, $3, $4, $5)
-		ON CONFLICT (idempotency_key) DO NOTHING
 		RETURNING entry_id::TEXT`,
 		taskID, uid, formula.CreditsDelta, formulaJSON, idKey,
 	).Scan(&entryID)
 	if insertErr != nil {
-		if isNotFound(insertErr) {
+		var pgErr *pgconn.PgError
+		if errors.As(insertErr, &pgErr) && pgErr.Code == "23505" {
+			// Idempotency: unique constraint hit, fetch existing entry.
+			if _, err := tx.Exec(r.Context(), "ROLLBACK TO SAVEPOINT sp_ledger_insert"); err != nil {
+				s.Logger.Error("rollback to savepoint ledger insert", "error", err)
+				s.errorJSON(w, http.StatusInternalServerError, "database error")
+				return
+			}
 			fetchErr := tx.QueryRow(r.Context(),
 				`SELECT entry_id::TEXT FROM ledger_entries WHERE idempotency_key = $1`,
 				idKey,
@@ -217,6 +242,11 @@ func (s *Server) runSettlement(w http.ResponseWriter, r *http.Request, commit bo
 			s.errorJSON(w, http.StatusInternalServerError, "database error")
 			return
 		}
+	}
+	if _, err := tx.Exec(r.Context(), "RELEASE SAVEPOINT sp_ledger_insert"); err != nil {
+		s.Logger.Error("release savepoint ledger insert", "error", err)
+		s.errorJSON(w, http.StatusInternalServerError, "database error")
+		return
 	}
 
 	for _, ev := range auditEvents {

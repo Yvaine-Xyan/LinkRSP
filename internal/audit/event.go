@@ -2,10 +2,12 @@ package audit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -164,15 +166,57 @@ func store(ctx context.Context, db execer, ev Event) error {
 		ev.Rule.RuleID, ev.Subject.Type, ev.Subject.ID,
 		ev.Scope.Trigger, traceTime,
 	)
+	// Outside an explicit transaction (e.g. pgxpool.Exec), Postgres savepoints
+	// are not meaningful across separate Exec calls. Only use savepoints when
+	// the caller passes a real pgx.Tx.
+	if _, ok := any(db).(pgx.Tx); !ok {
+		_, err = db.Exec(ctx, `
+			INSERT INTO audit_events
+				(event_id, schema_version, payload, rule_id, subject_type, subject_id,
+				 trigger, timestamp_utc, idempotency_key)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+			ev.EventID, ev.SchemaVersion, ev, ev.Rule.RuleID,
+			ev.Subject.Type, ev.Subject.ID, ev.Scope.Trigger,
+			ev.Trace.TimestampUTC, ikey,
+		)
+		if err == nil {
+			return nil
+		}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil
+		}
+		return err
+	}
+
+	_, err = db.Exec(ctx, "SAVEPOINT sp_audit_insert")
+	if err != nil {
+		return err
+	}
+
 	_, err = db.Exec(ctx, `
 		INSERT INTO audit_events
 			(event_id, schema_version, payload, rule_id, subject_type, subject_id,
 			 trigger, timestamp_utc, idempotency_key)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		ON CONFLICT (idempotency_key) DO NOTHING`,
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		ev.EventID, ev.SchemaVersion, ev, ev.Rule.RuleID,
 		ev.Subject.Type, ev.Subject.ID, ev.Scope.Trigger,
 		ev.Trace.TimestampUTC, ikey,
 	)
+	if err == nil {
+		_, relErr := db.Exec(ctx, "RELEASE SAVEPOINT sp_audit_insert")
+		return relErr
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		// Idempotency: ignore unique constraint violations on idempotency_key.
+		_, rbErr := db.Exec(ctx, "ROLLBACK TO SAVEPOINT sp_audit_insert")
+		if rbErr != nil {
+			return rbErr
+		}
+		_, relErr := db.Exec(ctx, "RELEASE SAVEPOINT sp_audit_insert")
+		return relErr
+	}
+	_, _ = db.Exec(ctx, "ROLLBACK TO SAVEPOINT sp_audit_insert")
 	return err
 }

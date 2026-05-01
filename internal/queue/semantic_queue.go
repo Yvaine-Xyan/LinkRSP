@@ -3,10 +3,12 @@ package queue
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -47,13 +49,20 @@ func Enqueue(ctx context.Context, pool *pgxpool.Pool, job Job, triggerWords []st
 		INSERT INTO semantic_audit_jobs
 			(rule_id, subject_type, subject_id, text_ref, trigger_words, routed_to, idempotency_key)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (idempotency_key) DO NOTHING`,
+		`,
 		job.RuleID, job.SubjectType, job.SubjectID,
 		nullableText(job.TextRef),
 		triggerWords,
 		nullableText(string(job.RoutedTo)),
 		ikey,
 	)
+	if err == nil {
+		return nil
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return nil
+	}
 	return err
 }
 
