@@ -68,13 +68,17 @@ Notes:
 }
 
 func cmdList(args []string) {
-	fs := flag.NewFlagSet("list", flag.ExitOnError)
+	fs := flag.NewFlagSet("list", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
 	baseURL := fs.String("base-url", "http://localhost:9090", "API base URL")
 	secret := fs.String("secret", "", "X-API-Shared-Secret (optional if server allows empty)")
 	status := fs.String("status", "pending", "Job status filter (pending|processing|human_review|done|skipped)")
 	ruleID := fs.String("rule-id", "", "Optional rule_id filter")
 	limit := fs.Int("limit", 50, "Max jobs (1-200)")
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		fmt.Fprintln(os.Stderr, "invalid args for list")
+		os.Exit(2)
+	}
 
 	u := strings.TrimRight(*baseURL, "/") + "/api/v1/internal/semantic-audit-jobs?status=" + urlQ(*status) + "&limit=" + fmt.Sprint(*limit)
 	if *ruleID != "" {
@@ -128,14 +132,18 @@ func cmdList(args []string) {
 }
 
 func cmdPatch(args []string) {
-	fs := flag.NewFlagSet("patch", flag.ExitOnError)
+	fs := flag.NewFlagSet("patch", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
 	baseURL := fs.String("base-url", "http://localhost:9090", "API base URL")
 	secret := fs.String("secret", "", "X-API-Shared-Secret (optional if server allows empty)")
 	jobID := fs.String("job-id", "", "Semantic audit job_id (UUID)")
 	status := fs.String("status", "", "New status (optional)")
 	verdict := fs.String("verdict", "", "New verdict: PASS|BLOCK|SKIP (optional)")
 	conf := fs.Float64("confidence", -1, "New confidence 0..1 (optional; omit by leaving at -1)")
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		fmt.Fprintln(os.Stderr, "invalid args for patch")
+		os.Exit(2)
+	}
 
 	if *jobID == "" {
 		fmt.Fprintln(os.Stderr, "--job-id is required")
