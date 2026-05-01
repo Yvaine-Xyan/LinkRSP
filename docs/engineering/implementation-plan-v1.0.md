@@ -181,7 +181,7 @@ status: 开发前决策集（可迭代）
 | `POST /api/v1/internal/semantic-audit-jobs/enqueue` | ✅ 完成 | 内部入队入口：自治工具/脚本触发，预筛命中词路由 |
 | `PATCH /api/v1/internal/semantic-audit-jobs/{job_id}` | ✅ 完成 | 人工复核写回接口，更新 status / verdict / confidence |
 | 写回审计事件落库 | ✅ 完成 | PATCH 写回同时追加 `audit_event`（subject_type=`semantic_audit_job`） |
-| 人工复核界面 / CLI | 🔲 未开始 | 可后置；当前以 GitHub Issues `appeal` 标签承载 |
+| 最小复核 CLI | ✅ 完成 | `cmd/semreview`：list/patch 队列，用于运行通路（不定义 SOP） |
 
 **启动条件**：
 

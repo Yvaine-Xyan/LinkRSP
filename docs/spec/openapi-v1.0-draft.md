@@ -68,6 +68,8 @@
   - 幂等安全：重复 PATCH 同字段无副作用；返回更新后完整 job 对象
   - 写回落库：写回同时追加一条 `audit_event`（subject_type=`semantic_audit_job`，便于回放）
 
+> 运维建议：对 Phase D 的最小人工复核通路，可直接使用仓库内 CLI `cmd/semreview`（list/patch），不强制绑定特定社区 SOP。
+
 ### 2.6 Health（健康检查）
 
 - `GET /healthz`
