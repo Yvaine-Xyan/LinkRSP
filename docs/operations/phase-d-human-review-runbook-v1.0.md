@@ -141,6 +141,24 @@ curl -sS "$BASE_URL/api/v1/internal/semantic-audit-jobs/stats" \
 
 **说明**：`LINKRSP_API_BASE_URL` / `LINKRSP_API_SHARED_SECRET` 是 **地址和密钥**，不是阈值；阈值只用上面四个 **Variables** 调。
 
+### 3.2 「仓库里没有 API_SHARED_SECRET」是正常的
+
+`API_SHARED_SECRET` **不会**作为文件提交到 Git 仓库（本地只在 [`.env`](../../.env.example) 里配置，且 `.env` 被忽略）。若你还没为**正在运行的 linkrsp 进程**设过密钥，可以按下面二选一：
+
+**方案 A（推荐，对外可访问的 API）**
+
+1. 自己生成一段足够长的随机字符串（例如 32+ 字符），当作共享密钥。  
+2. 在 **部署 linkrsp 的环境**里设置环境变量 `API_SHARED_SECRET=<该字符串>`（与 [`.env.example`](../../.env.example) 一致），重启服务。  
+3. 在 GitHub **Actions → Secrets**（不是 Variables）里新增 **`LINKRSP_API_SHARED_SECRET`**，值与上一步 **完全相同**。  
+4. 同时配置 **`LINKRSP_API_BASE_URL`** 指向该服务的根地址。
+
+**方案 B（仅本地开发、没有公网 API）**
+
+- 可以不设 `API_SHARED_SECRET`（服务端为空则写接口不校验密钥，仅适合本机）。  
+- 此时 **不要**配置 `LINKRSP_API_BASE_URL`（或留空），看门狗脚本会跳过检查；等有了公网部署再按方案 A 补齐。
+
+**切勿**把真实密钥写进 **Repository variables**（对他人可见）；密钥一律用 **Secrets** 页签。
+
 ---
 
 ## 4. 入队（enqueue）与滥用面
