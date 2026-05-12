@@ -8,13 +8,14 @@ import (
 )
 
 type Config struct {
-	DatabaseURL                 string
-	Port                        string
-	LogLevel                    string
-	Env                         string
-	APISharedSecret             string
-	R006AccelerationThreshold   float64
-	R010GenesisEndTime          time.Time
+	DatabaseURL                      string
+	Port                             string
+	LogLevel                         string
+	Env                              string
+	APISharedSecret                  string
+	R006AccelerationThreshold        float64
+	R010GenesisEndTime               time.Time
+	SemanticAuditEnqueueMaxPerMinute int
 }
 
 func Load() (*Config, error) {
@@ -60,14 +61,24 @@ func Load() (*Config, error) {
 		r010GenesisEndTime = parsed.UTC()
 	}
 
+	semanticEnqueueMaxPerMinute := 0
+	if raw := os.Getenv("SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE"); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil || parsed < 0 {
+			return nil, fmt.Errorf("invalid SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE: must be non-negative integer")
+		}
+		semanticEnqueueMaxPerMinute = parsed
+	}
+
 	return &Config{
-		DatabaseURL:               dbURL,
-		Port:                      port,
-		LogLevel:                  logLevel,
-		Env:                       env,
-		APISharedSecret:           apiSharedSecret,
-		R006AccelerationThreshold: r006AccelerationThreshold,
-		R010GenesisEndTime:        r010GenesisEndTime,
+		DatabaseURL:                      dbURL,
+		Port:                             port,
+		LogLevel:                         logLevel,
+		Env:                              env,
+		APISharedSecret:                  apiSharedSecret,
+		R006AccelerationThreshold:        r006AccelerationThreshold,
+		R010GenesisEndTime:               r010GenesisEndTime,
+		SemanticAuditEnqueueMaxPerMinute: semanticEnqueueMaxPerMinute,
 	}, nil
 }
 

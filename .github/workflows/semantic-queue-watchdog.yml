@@ -1,0 +1,25 @@
+name: Semantic Queue Watchdog
+
+on:
+  schedule:
+    # Every 6 hours UTC
+    - cron: "17 */6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check-stats:
+    name: Check semantic audit queue stats
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run queue stats check
+        env:
+          BASE_URL: ${{ secrets.LINKRSP_API_BASE_URL }}
+          SECRET: ${{ secrets.LINKRSP_API_SHARED_SECRET }}
+          MAX_PENDING: ${{ vars.SEMANTIC_QUEUE_MAX_PENDING }}
+          MAX_HUMAN_REVIEW: ${{ vars.SEMANTIC_QUEUE_MAX_HUMAN_REVIEW }}
+          OLDEST_PENDING_MAX_AGE_HOURS: ${{ vars.SEMANTIC_QUEUE_OLDEST_PENDING_MAX_HOURS }}
+          OLDEST_HUMAN_MAX_AGE_HOURS: ${{ vars.SEMANTIC_QUEUE_OLDEST_HUMAN_MAX_HOURS }}
+        run: python3 scripts/ops/check_semantic_queue_stats.py

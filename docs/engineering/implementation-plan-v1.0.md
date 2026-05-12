@@ -60,7 +60,9 @@ status: 开发前决策集（可迭代）
 
 **目标**：在不引入付费资源、不触发国内备案的前提下，实现 R-001—R-010 的可运行闭环，产出可回放审计事件。
 
-**实际进度（截至 2026-04-26，进行中）**：
+**主链路收口完成日期：2026-05-12**（R-001–R-010 工程交付已齐；运行时阈值与创世切点说明见 [`docs/operations/runtime-r006-r010-config.md`](../operations/runtime-r006-r010-config.md)。）
+
+**实际进度（截至 2026-05-12，主链路已完成）**：
 
 | 交付物 | 状态 | 说明 |
 |--------|------|------|
@@ -93,10 +95,9 @@ status: 开发前决策集（可迭代）
 - `GET /api/v1/internal/lrs-ledger-query` — 内部账本窗口查询（返回分录列表、`entry_count` 与 `projected_balance` 投影视图）
 - `GET /api/v1/internal/attestation-index-query` — 内部存证窗口查询（返回存证列表，供规则与统计复用）
 
-**剩余工作**（进入 Phase C 前）：
+**剩余工作**（持续演进，非阻塞 Phase C/D）：
 
-- 至少一组外部/试点环境的端到端闭环验证（真实 DB + 两名真实参与者）
-- 将 `R006AccelerationThreshold` 与 `R010GenesisEndTime` 从当前保守默认值演进为真实配置/统计来源
+- 将 `R006AccelerationThreshold` 与 `R010GenesisEndTime` 从试点默认值演进为经数据或治理确认的配置（策略见 [`runtime-r006-r010-config.md`](../operations/runtime-r006-r010-config.md)）
 
 **Phase B 收口进展（截至 2026-04-27）**：
 
@@ -183,6 +184,9 @@ status: 开发前决策集（可迭代）
 | 写回审计事件落库 | ✅ 完成 | PATCH 写回同时追加 `audit_event`（subject_type=`semantic_audit_job`） |
 | 最小复核 CLI | ✅ 完成 | `cmd/semreview`：list/patch 队列，用于运行通路（不定义 SOP） |
 | 证据回放包接口 | ✅ 完成 | `GET /api/v1/internal/semantic-audit-jobs/{job_id}/replay`，用于复核/运维回放证据 |
+| Phase D 复核 runbook | ✅ 完成 | [`docs/operations/phase-d-human-review-runbook-v1.0.md`](../operations/phase-d-human-review-runbook-v1.0.md) |
+| 队列积压看门狗 | ✅ 完成 | [`.github/workflows/semantic-queue-watchdog.yml`](../../.github/workflows/semantic-queue-watchdog.yml) + [`scripts/ops/check_semantic_queue_stats.py`](../../scripts/ops/check_semantic_queue_stats.py)（依赖 `LINKRSP_API_BASE_URL` / `LINKRSP_API_SHARED_SECRET`） |
+| 入队可选全局限速 | ✅ 完成 | 环境变量 `SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE`（0=关闭） |
 
 **启动条件**：
 

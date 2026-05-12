@@ -48,6 +48,29 @@ func TestLoad_ParsesSettlementRuntimeConfig(t *testing.T) {
 	}
 }
 
+func TestLoad_ParsesSemanticEnqueueRateLimit(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE", "30")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	if cfg.SemanticAuditEnqueueMaxPerMinute != 30 {
+		t.Fatalf("SemanticAuditEnqueueMaxPerMinute: got %d want 30", cfg.SemanticAuditEnqueueMaxPerMinute)
+	}
+}
+
+func TestLoad_RejectsInvalidSemanticEnqueueRateLimit(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE", "not-a-number")
+
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
 func TestLoad_RejectsInvalidSettlementRuntimeConfig(t *testing.T) {
 	t.Run("threshold", func(t *testing.T) {
 		t.Setenv("DATABASE_URL", "postgres://example")

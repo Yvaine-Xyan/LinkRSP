@@ -94,7 +94,8 @@ Current backend runtime variables are declared in [`.env.example`](.env.example)
 | `PORT` | HTTP listen port | `9090` in example |
 | `LOG_LEVEL` | Structured log verbosity | `info` |
 | `ENV` | Runtime environment label | `development` |
-| `API_SHARED_SECRET` | Minimal shared-secret gate for write routes, internal queries, and audit-event query endpoints | Empty = local compatibility pass-through; set in deployed environments |
+| `API_SHARED_SECRET` | Minimal shared-secret gate for write routes, internal queries, and audit-event query endpoints | **Production: must be non-empty.** Empty = local dev pass-through only |
+| `SEMANTIC_AUDIT_ENQUEUE_MAX_PER_MINUTE` | Phase D: global cap on enqueue requests per UTC minute | `0` = disabled |
 | `R006_ACCELERATION_THRESHOLD` | Runtime threshold for `R-006` credit acceleration anomaly checks | `1000` |
 | `R010_GENESIS_END_TIME` | Runtime genesis cutoff for `R-010` post-genesis outlier checks | RFC3339; example uses `2099-01-01T00:00:00Z` |
 

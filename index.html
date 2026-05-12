@@ -810,7 +810,7 @@
           </div>
           <div class="hero-status-card">
             <strong><span class="zh-text">运行时控制</span><span class="en-text">Runtime Controls</span></strong>
-            <span><span class="zh-text">已开放 API 共享密钥与 R-006 / R-010 运行时参数配置，便于 Phase B/C 过渡。</span><span class="en-text">Shared-secret API gating and R-006 / R-010 runtime knobs are now exposed for the Phase B/C transition.</span></span>
+            <span><span class="zh-text">Phase B 主链路已收口；生产环境须启用 API 共享密钥。R-006 / R-010 参数说明见运维文档。</span><span class="en-text">Phase B main path is closed out; production must enable the shared API secret. See ops docs for R-006 / R-010 runtime knobs.</span></span>
           </div>
           <div class="hero-status-card">
             <strong><span class="zh-text">语义审计队列</span><span class="en-text">Semantic Audit Queue</span></strong>
@@ -1072,11 +1072,11 @@
       </div>
 
       <div class="phase-item fade-up" style="transition-delay:.07s">
-        <div class="phase-dot active">B</div>
+        <div class="phase-dot done">✓</div>
         <div class="phase-body">
-          <span class="phase-label active"><span class="zh-text">进行中</span><span class="en-text">In Progress</span></span>
+          <span class="phase-label done"><span class="zh-text">已完成</span><span class="en-text">Done</span></span>
           <h4><span class="zh-text">Phase B — R 类规则 MVP</span><span class="en-text">Phase B — R-Class Rules MVP</span></h4>
-          <p><span class="zh-text">Go + PostgreSQL + Supabase；R-001–R-010 已进入可运行主链路，其中 R-006 / R-010 已接入结算、R-009 已接入 attestations；运行时配置与共享密钥门禁已落地。</span><span class="en-text">Go + PostgreSQL + Supabase; R-001–R-010 are now entering the runnable main path, with R-006 / R-010 wired into settlement, R-009 into attestations, plus runtime config and shared-secret gating in place.</span></p>
+          <p><span class="zh-text">Go + PostgreSQL + Supabase；R-001–R-010 可运行主链路已收口；R-006 / R-010 运行时参数说明见运维文档。共享密钥在生产环境必设。</span><span class="en-text">Go + PostgreSQL + Supabase; R-001–R-010 runnable main path is closed out; see ops docs for R-006 / R-010 runtime knobs. Shared secret is mandatory in production.</span></p>
         </div>
       </div>
 

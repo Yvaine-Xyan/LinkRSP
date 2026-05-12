@@ -47,6 +47,8 @@ func main() {
 	switch os.Args[1] {
 	case "list":
 		cmdList(os.Args[2:])
+	case "replay":
+		cmdReplay(os.Args[2:])
 	case "patch":
 		cmdPatch(os.Args[2:])
 	default:
@@ -59,8 +61,9 @@ func usage() {
 	fmt.Fprintln(os.Stderr, `semreview: minimal Phase D semantic-audit reviewer CLI
 
 Usage:
-  semreview list  --base-url http://localhost:9090 --secret <shared> --status pending --limit 50
-  semreview patch --base-url http://localhost:9090 --secret <shared> --job-id <uuid> --status done --verdict PASS --confidence 0.7
+  semreview list   --base-url http://localhost:9090 --secret <shared> --status pending --limit 50
+  semreview replay --base-url http://localhost:9090 --secret <shared> --job-id <uuid>
+  semreview patch  --base-url http://localhost:9090 --secret <shared> --job-id <uuid> --status done --verdict PASS --confidence 0.7
 
 Notes:
   - This CLI does not define community SOP; it only operates the queue/write-back path.
@@ -129,6 +132,42 @@ func cmdList(args []string) {
 		}
 		fmt.Print("\n")
 	}
+}
+
+func cmdReplay(args []string) {
+	fs := flag.NewFlagSet("replay", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	baseURL := fs.String("base-url", "http://localhost:9090", "API base URL")
+	secret := fs.String("secret", "", "X-API-Shared-Secret (optional if server allows empty)")
+	jobID := fs.String("job-id", "", "Semantic audit job_id (UUID)")
+	if err := fs.Parse(args); err != nil {
+		fmt.Fprintln(os.Stderr, "invalid args for replay")
+		os.Exit(2)
+	}
+	if *jobID == "" {
+		fmt.Fprintln(os.Stderr, "--job-id is required")
+		os.Exit(2)
+	}
+
+	u := strings.TrimRight(*baseURL, "/") + "/api/v1/internal/semantic-audit-jobs/" + *jobID + "/replay"
+	req, _ := http.NewRequest(http.MethodGet, u, nil)
+	if *secret != "" {
+		req.Header.Set("X-API-Shared-Secret", *secret)
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fatal(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		fmt.Fprintf(os.Stderr, "HTTP %d: %s\n", resp.StatusCode, string(body))
+		os.Exit(1)
+	}
+	fmt.Println(string(body))
 }
 
 func cmdPatch(args []string) {

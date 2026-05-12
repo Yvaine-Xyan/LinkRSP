@@ -49,6 +49,7 @@ func main() {
 		R006AccelerationThreshold: cfg.R006AccelerationThreshold,
 		R010GenesisEndTime:        cfg.R010GenesisEndTime,
 	}
+	apiSrv.SetSemanticEnqueueRateLimit(cfg.SemanticAuditEnqueueMaxPerMinute)
 	apiSrv.RegisterHealthRoutes(mux)
 	apiSrv.RegisterRoutes(mux)
 

@@ -56,8 +56,13 @@ docs/engineering/
   implementation-plan-v1.0.md           # Phase A-G 路线图
   architecture-v0.1.md
   technology-strategy-v1.0.md
+  llm-oracle-integration-rfc-v0.1.md    # LLM Oracle 接入 RFC（前置）
 docs/reports/
   feasibility-assessment-v1.0-alpha.md  # 32条执行轨道来源
+docs/operations/
+  phase-d-human-review-runbook-v1.0.md  # Phase D 人工复核 SOP
+  runtime-r006-r010-config.md           # R-006 / R-010 运行时参数
+  llm-calibration/                      # Phase E few-shot 样本入口
 ```
 
 ---

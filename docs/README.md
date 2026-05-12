@@ -14,6 +14,16 @@
 | [`governance/appeals-and-public-record.md`](governance/appeals-and-public-record.md) | 申诉渠道与「公开记录」定义（代码前） |
 | [`operations/appeal-log.md`](operations/appeal-log.md) | 申诉公开记录（只追加日志） |
 
+## 运维与试点
+
+| 文件 | 说明 |
+|------|------|
+| [`operations/pilot-runbook-v1.0.md`](operations/pilot-runbook-v1.0.md) | Phase C 最小试点操作手册 |
+| [`operations/pilot-record-v1.md`](operations/pilot-record-v1.md) | 试点记录 |
+| [`operations/phase-d-human-review-runbook-v1.0.md`](operations/phase-d-human-review-runbook-v1.0.md) | Phase D 语义审计人工复核（list / replay / patch） |
+| [`operations/runtime-r006-r010-config.md`](operations/runtime-r006-r010-config.md) | R-006 / R-010 运行时参数说明 |
+| [`operations/llm-calibration/README.md`](operations/llm-calibration/README.md) | Phase E 前 few-shot / 校准样本维护入口 |
+
 ## 规格（spec）
 
 | 文件 | 说明 |
@@ -30,6 +40,7 @@
 | [`engineering/architecture-v0.1.md`](engineering/architecture-v0.1.md) | 工程架构理解、评估与设计草案（v0.1） |
 | [`engineering/technology-strategy-v1.0.md`](engineering/technology-strategy-v1.0.md) | 技术栈与长期演进策略（v1.0，**后端锁定 Go**） |
 | [`engineering/implementation-plan-v1.0.md`](engineering/implementation-plan-v1.0.md) | 工程实施排期与开启条件（备案/LLM/HDGP 接入后置） |
+| [`engineering/llm-oracle-integration-rfc-v0.1.md`](engineering/llm-oracle-integration-rfc-v0.1.md) | LLM Oracle 接入 RFC v0.1（Phase E 前置草案） |
 | [`security/threat-model-scope-v1.0.md`](security/threat-model-scope-v1.0.md) | 威胁模型范围 v1.0（分阶段相对 HDGP 全域 TM） |
 
 根目录另有 **[`SECURITY.md`](../SECURITY.md)**（漏洞私下报告；与申诉分流）。

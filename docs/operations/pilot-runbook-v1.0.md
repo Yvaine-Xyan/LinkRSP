@@ -9,6 +9,8 @@ applies_to: Phase C 收口前的"两人一次任务"端到端验证
 > 本手册解决一个具体问题：在没有 UI、没有社区注册流程、没有移动端的情况下，
 > 两名真实参与者如何通过现有 API 完成一次端到端任务并让数据进入 DB。
 
+**相关**：Phase D 语义审计人工复核见 [`phase-d-human-review-runbook-v1.0.md`](phase-d-human-review-runbook-v1.0.md)。
+
 ---
 
 ## 1. 前置认知：哪些东西"现在不需要"

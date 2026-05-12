@@ -233,6 +233,11 @@ func (s *Server) patchSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
 // It is an internal ingestion point used by operators or community-run tooling.
 // The system does not prescribe community SOP; it only provides an auditable queue path.
 func (s *Server) enqueueSemanticAuditJob(w http.ResponseWriter, r *http.Request) {
+	if !s.consumeSemanticEnqueueToken() {
+		s.errorJSON(w, http.StatusTooManyRequests, "semantic audit enqueue rate limit exceeded")
+		return
+	}
+
 	var req enqueueSemanticAuditJobRequest
 	if err := s.decodeBody(r, &req); err != nil {
 		s.errorJSON(w, http.StatusBadRequest, "invalid request body")

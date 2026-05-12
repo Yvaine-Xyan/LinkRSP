@@ -22,6 +22,7 @@ type Server struct {
 	APISharedSecret           string
 	R006AccelerationThreshold float64
 	R010GenesisEndTime        time.Time
+	semanticEnqueueLimiter    *slidingMinuteLimiter
 }
 
 func (s *Server) RegisterHealthRoutes(mux *http.ServeMux) {
@@ -99,4 +100,16 @@ func derefStr(p *string) string {
 // isNotFound returns true for pgx "no rows" errors.
 func isNotFound(err error) bool {
 	return errors.Is(err, pgx.ErrNoRows)
+}
+
+// SetSemanticEnqueueRateLimit sets a global per-minute cap on semantic audit enqueue (0 = unlimited).
+func (s *Server) SetSemanticEnqueueRateLimit(maxPerMinute int) {
+	s.semanticEnqueueLimiter = newSlidingMinuteLimiter(maxPerMinute)
+}
+
+func (s *Server) consumeSemanticEnqueueToken() bool {
+	if s.semanticEnqueueLimiter == nil {
+		return true
+	}
+	return s.semanticEnqueueLimiter.take()
 }
