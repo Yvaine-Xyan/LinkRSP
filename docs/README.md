@@ -10,6 +10,7 @@
 |------|------|
 | [`whitepaper/linkrsp-whitepaper-v1.0-alpha.md`](whitepaper/linkrsp-whitepaper-v1.0-alpha.md) | 白皮书 |
 | [`governance/management-regulations-draft-v1.0-alpha.md`](governance/management-regulations-draft-v1.0-alpha.md) | 管理制度草案 |
+| [`governance/membership-credit-lifecycle-supplement-v0.1.md`](governance/membership-credit-lifecycle-supplement-v0.1.md) | 成员资格 / 积分语义 / 账户生命周期补充（v0.1 草案） |
 | [`governance/versioning-policy.md`](governance/versioning-policy.md) | **发布物 ≤ v1.0** 与文字稿例外说明 |
 | [`governance/appeals-and-public-record.md`](governance/appeals-and-public-record.md) | 申诉渠道与「公开记录」定义（代码前） |
 | [`operations/appeal-log.md`](operations/appeal-log.md) | 申诉公开记录（只追加日志） |
