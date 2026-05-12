@@ -110,7 +110,36 @@ curl -sS "$BASE_URL/api/v1/internal/semantic-audit-jobs/stats" \
 字段说明：`counts_by_status`、`oldest_pending_utc`、`oldest_human_review_utc`。  
 定时检查可参考仓库 [`.github/workflows/semantic-queue-watchdog.yml`](../../.github/workflows/semantic-queue-watchdog.yml) 与 [`scripts/ops/check_semantic_queue_stats.py`](../../scripts/ops/check_semantic_queue_stats.py)。
 
-**GitHub 配置**：在仓库 **Settings → Secrets and variables → Actions** 中新增 `LINKRSP_API_BASE_URL`（无尾斜杠）、`LINKRSP_API_SHARED_SECRET`。未配置时脚本对 `BASE_URL` 为空直接退出 0（不阻塞 CI）。阈值可通过 **Variables** 覆盖：`SEMANTIC_QUEUE_MAX_PENDING`、`SEMANTIC_QUEUE_MAX_HUMAN_REVIEW`、`SEMANTIC_QUEUE_OLDEST_PENDING_MAX_HOURS`、`SEMANTIC_QUEUE_OLDEST_HUMAN_MAX_HOURS`（均为可选；未设则用脚本内默认值）。
+### 3.1 在 GitHub 网页里哪里配置（Secrets / Variables）
+
+**不要**在左侧 **Actions** 里找——那里只有工作流运行记录。请按下面路径操作（需对本仓库有 **Settings** 权限，一般为 Owner / Admin）：
+
+1. 打开仓库首页：`https://github.com/Yvaine-Xyan/LinkRSP`
+2. 点顶部菜单 **Settings**（在 **Insights** 旁边；若看不到，说明当前账号无权改仓库设置）
+3. 左侧栏点开 **Secrets and variables**，再点 **Actions**
+4. 你会看到两个子页签：
+   - **Secrets**（敏感值，写入后不可再查看，只能删改）：点 **New repository secret**
+   - **Variables**（非敏感、可在 PR 里引用策略允许时可见）：点 **Variables** 页签 → **New repository variable**
+
+**看门狗需要的 Secrets（名称须完全一致）**
+
+| Name | 填什么 |
+|------|--------|
+| `LINKRSP_API_BASE_URL` | 你的 linkrsp 服务根 URL，**不要**末尾 `/`，例如 `https://你的域名` 或 `http://主机:9090` |
+| `LINKRSP_API_SHARED_SECRET` | 与线上/试点环境里的 **`API_SHARED_SECRET`** 完全一致 |
+
+未配置 `LINKRSP_API_BASE_URL` 时，脚本认为 `BASE_URL` 为空并 **直接退出 0**，工作流显示成功但不会真正检查队列（适合尚未暴露 API 的阶段）。
+
+**阈值（可选，在 Variables 页签）**
+
+| Name | 含义 | 不设时脚本默认 |
+|------|------|----------------|
+| `SEMANTIC_QUEUE_MAX_PENDING` | `pending` 条数超过则失败 | 200 |
+| `SEMANTIC_QUEUE_MAX_HUMAN_REVIEW` | `human_review` 条数超过则失败 | 200 |
+| `SEMANTIC_QUEUE_OLDEST_PENDING_MAX_HOURS` | 最老 `pending` 超过该小时数则失败 | 72 |
+| `SEMANTIC_QUEUE_OLDEST_HUMAN_MAX_HOURS` | 最老 `human_review` 超过该小时数则失败 | 72 |
+
+**说明**：`LINKRSP_API_BASE_URL` / `LINKRSP_API_SHARED_SECRET` 是 **地址和密钥**，不是阈值；阈值只用上面四个 **Variables** 调。
 
 ---
 
