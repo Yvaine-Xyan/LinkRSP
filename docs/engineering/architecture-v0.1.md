@@ -2,7 +2,7 @@
 
 > 性质：工程视角的补充说明；不构成法律或合规承诺。  
 > 与《可行性评估报告》的关系：下文在**系统边界、数据与审计链、落地顺序**上展开，并标注报告中的工程缺口。  
-> **相关文档**：[可行性评估](../reports/feasibility-assessment-v1.0-alpha.md) · [白皮书](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [技术栈与长期策略 v1.0](technology-strategy-v1.0.md) · [威胁模型范围 v1.0](../security/threat-model-scope-v1.0.md) · [申诉与公开记录](../governance/appeals-and-public-record.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [§6 规则评述](../reports/rule-scenarios-author-assessment.md) · [版本策略](../governance/versioning-policy.md)（发布物 semver 在未达上线标准前 ≤ v1.0）。
+> **相关文档**：[可行性评估](../reports/feasibility-assessment-v1.0-alpha.md) · [白皮书](../whitepaper/linkrsp-whitepaper-v1.0-alpha.md) · [核心算法规格 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [热力学经济模型调研 v1.0](../spec/thermodynamic-economic-model-research-v1.0.md) · [技术栈与长期策略 v1.0](technology-strategy-v1.0.md) · [威胁模型范围 v1.0](../security/threat-model-scope-v1.0.md) · [申诉与公开记录](../governance/appeals-and-public-record.md) · [管理制度草案](../governance/management-regulations-draft-v1.0-alpha.md) · [成员资格与积分生命周期补充 v0.1](../governance/membership-credit-lifecycle-supplement-v0.1.md) · [§6 规则评述](../reports/rule-scenarios-author-assessment.md) · [版本策略](../governance/versioning-policy.md)（发布物 semver 在未达上线标准前 ≤ v1.0）。
 
 ---
 
@@ -12,7 +12,7 @@
 
 | 轴线 | 职责 | 典型组件 |
 |------|------|----------|
-| **身份与社区** | UID、S/N 社区归属、「1+1」约束、升 S 流程状态机 | Identity / Membership / Lifecycle 服务 |
+| **身份与社区** | UID、S/N 社区归属、「1+1」约束、升 S 流程状态机、成员资格边生命周期与拓扑事件（规格入口见 [补充稿 v0.1](../governance/membership-credit-lifecycle-supplement-v0.1.md)） | Identity / Membership / Lifecycle 服务 |
 | **任务与物理存证** | T_phy、V 档位、握手与设备 UX、原始证据对象存储 | Task、Attestation、Device/BLE 适配 |
 | **LRS 核算** | Credits 公式、K_global、创世期锁定、Harness 与阻尼 | Ledger / Policy Engine（数值与不变量） |
 | **治理与 Judge** | ΣW_risk 选自「原子劳务库」、投票权重、IPO 材料 | Governance、Voting、规则版本 |
@@ -46,6 +46,7 @@
 - **K_global 阻尼与全网中位数**：需明确时间窗口、样本量下限、冷启动与低活跃社区的**回退策略**（避免除零或单点操纵）。
 - **d²C/dt²**：需定义采样周期、窗口、群体基线；否则统计上易被噪声触发或滞后。
 - **「HDGP 原子劳务库」**：若库尚未以机器可读格式发布，Judge 侧会阻塞；建议 LinkRSP 先自带 **最小只读目录（snapshot）+ 版本号**，再异步对齐上游。
+- **成员资格与拓扑事件**：IPO/降级导致的非法态（如双 S）需可审计的协调语义与写路径冻结策略；详见 [治理补充稿 v0.1](../governance/membership-credit-lifecycle-supplement-v0.1.md)，避免实现与 1+1 叙事漂移。
 - **LLM 批处理**：队列需 **幂等键**（任务/规则版本/content-hash），避免重复审同一对象。
 
 ---

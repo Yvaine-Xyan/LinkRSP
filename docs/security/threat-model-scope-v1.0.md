@@ -126,6 +126,10 @@ HDGP 侧威胁模型覆盖 **Engine / 策略包** 等；LinkRSP 须额外覆盖 
 | **rule input/output snapshot** | API / Adapter | External Engine / future queue | 版本回滚、输入漂移、输出不可重放 |
 | **prompt summary / review job** | Adapter / future queue | LLM Worker / Human Review | prompt 注入、队列投毒、阻塞、泄露敏感文本 |
 
+#### 6.3.1 账户休眠 / 归档与保留策略（威胁面引子）
+
+长周期运行下，**休眠账户、身故或治理终止**后的数据最小化、冷归档与对象存储保留期若未定义，可能扩大泄露面或引发合规争议。设计原则与协议叙事见 [`../governance/membership-credit-lifecycle-supplement-v0.1.md`](../governance/membership-credit-lifecycle-supplement-v0.1.md)；工程侧需与对象签名 URL 生命周期、审计导出策略一并评审。
+
 ### 6.4 对外连接前的最小安全要求
 
 - **内部接口隔离**：`/api/v1/internal/*` 在共享密钥之外，还需补调用审计、密钥轮换与最小调用主体边界。

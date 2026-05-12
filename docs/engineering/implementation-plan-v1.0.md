@@ -206,6 +206,8 @@ status: 开发前决策集（可迭代）
 - 有足够的人工复核样本用于 few-shot 与阈值校准；
 - 有清晰的隐私与数据最小化策略（参考威胁模型范围）。
 
+**Phase F 前置（非代码，建议冻结）**：成员资格边状态机、IPO 冲突协调窗口与账户休眠/归档及数据分级留存的文字 spec、公开披露与 API/数据字典对齐后，再收紧与 HDGP 的接口契约绑定范围。见 [`docs/governance/membership-credit-lifecycle-supplement-v0.1.md`](../governance/membership-credit-lifecycle-supplement-v0.1.md)。
+
 ---
 
 ### Phase F：HDGP 可运行 Engine 接入（后置）
