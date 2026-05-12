@@ -21,7 +21,9 @@ func TestSlidingMinuteLimiter_blocksAfterMax(t *testing.T) {
 	if lim == nil {
 		t.Fatal("expected limiter")
 	}
-	if !lim.take() || !lim.take() {
+	first := lim.take()
+	second := lim.take()
+	if !first || !second {
 		t.Fatal("expected first two allowed")
 	}
 	if lim.take() {
