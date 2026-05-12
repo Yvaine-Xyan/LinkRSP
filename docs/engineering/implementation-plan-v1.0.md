@@ -1,10 +1,10 @@
 ---
-title: LinkRSP 实施计划（工程阶段排期）
+title: LinkRSP (韧链) 实施计划（工程阶段排期）
 version: v1.0（文稿）
 status: 开发前决策集（可迭代）
 ---
 
-# LinkRSP 实施计划 v1.0（工程排期与开启条件）
+# LinkRSP (韧链) 实施计划 v1.0（工程排期与开启条件）
 
 > 本文档将 LinkRSP 的工程实现拆为可分期推进的基础设施工作流，并将 **备案 / 国内上线 / 付费资源 / LLM 调用** 等高成本项尽量后置。  
 > 交叉引用：技术栈策略 `docs/engineering/technology-strategy-v1.0.md`；规则集 `docs/governance/rule-engine/`；审计事件 `docs/spec/audit-event-schema-v1.0.md`；时间口径 `docs/spec/time-and-window-conventions-v1.0.md`；申诉与公开记录 `docs/governance/appeals-and-public-record.md`。

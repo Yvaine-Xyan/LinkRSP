@@ -1,6 +1,6 @@
-# LinkRSP
+# LinkRSP (韧链)
 
-**Link Reshuffling & Survival Protocol**  
+**Link Reshuffling & Survival Protocol (韧链)**  
 *Decentralized protocol for labor rebalancing and survival resilience.*
 
 > Exchange time, link surplus.

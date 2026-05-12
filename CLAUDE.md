@@ -1,9 +1,9 @@
-# CLAUDE.md — LinkRSP 开发指南
+# CLAUDE.md — LinkRSP (韧链) 开发指南
 
 ## 项目身份
 
-**LinkRSP**（Link Reshuffling & Survival Protocol）是去中心化劳动力互助协议。  
-当前阶段：**Phase B 进行中**（R-001–R-005 + REST API 已上线；R-006–R-010 开放共建）。  
+**LinkRSP (韧链)**（Link Reshuffling & Survival Protocol）是去中心化劳动力互助协议。 
+当前阶段：**Phase B 进行中**（R-001–R-005 + REST API 已上线；R-006–R-010 开放共建）。 
 网站：`www.linkrsp.com` | 治理层：HDGP | 许可：MIT
 
 ---

@@ -1,10 +1,10 @@
 ---
-title: LinkRSP 技术栈与长期演进策略
+title: LinkRSP (韧链) 技术栈与长期演进策略
 version: v1.0（文稿）
 status: 方向性约束（非即时实施清单）
 ---
 
-# LinkRSP 技术栈与长期演进策略 v1.0
+# LinkRSP (韧链) 技术栈与长期演进策略 v1.0
 
 > **项目代号**：linkrsp（LinkRSP）。本文档描述**方向性**技术选择与**防技术债**原则；具体框架以立项时的团队能力与法域要求为准。  
 > **交叉引用**：[工程架构 v0.1](architecture-v0.1.md) · [核心算法规格 v1.0](../spec/linkrsp-core-algorithm-spec-v1.0.md) · [可行性评估](../reports/feasibility-assessment-v1.0-alpha.md) · [威胁模型范围 v1.0](../security/threat-model-scope-v1.0.md) · [申诉与公开记录](../governance/appeals-and-public-record.md) · [版本策略](../governance/versioning-policy.md)

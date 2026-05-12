@@ -1,4 +1,4 @@
-# LinkRSP 文档索引
+# LinkRSP (韧链) 文档索引
 
 ## 与 HDGP 开源基线
 

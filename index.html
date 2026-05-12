@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkRSP — 劳动力再平衡与生存韧性协议</title>
+  <title>韧链 (LinkRSP) — 劳动力再平衡与生存韧性协议</title>
+  <link rel="icon" href="pic/LinkRSP01.2.png" type="image/png">
   <meta name="description" content="去中心化劳动力互助协议，为可审计的物理劳动建立互助调度与积分锚定。Decentralized labor mutual-aid protocol anchoring credits to auditable physical work.">
   <link rel="canonical" href="https://www.linkrsp.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +39,29 @@
       --shadow-md: 0 2px 8px rgba(22,58,40,.10), 0 8px 32px rgba(22,58,40,.09);
     }
 
+    [data-theme="dark"] {
+      --g950: #F6FCF8;
+      --g900: #EEF8F1;
+      --g800: #D8F3DC;
+      --g750: #B7E4C7;
+      --g700: #95D5B2;
+      --g600: #74C69D;
+      --g500: #52B788;
+      --g400: #40916C;
+      --g300: #2D6A4F;
+      --g200: #1F5236;
+      --g100: #163C28;
+      --g50:  #0B2218;
+      --g1:   #061510;
+      --g10:  #061510;
+      --ink:  #EEF8F1;
+      --ink2: #D8F3DC;
+      --ink3: #B7E4C7;
+      --border: #163C28;
+      --border2: #1F5236;
+      --white: #0B2218;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -53,13 +77,13 @@
     /* ═══ NAV ═══ */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(246,252,248,.92);
+      background: var(--white);
       backdrop-filter: blur(14px) saturate(1.4);
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
       max-width: 1160px; margin: 0 auto; padding: 0 2rem;
-      height: 62px; display: flex; align-items: center; gap: 1.5rem;
+      height: 62px; display: flex; align-items: center; gap: 1rem;
     }
     .nav-logo {
       display: flex; align-items: center; gap: .7rem;
@@ -109,6 +133,20 @@
       border: 1px solid var(--border); transition: border-color .15s, color .15s, background .15s;
     }
     .nav-gh:hover { border-color: var(--g400); color: var(--g700); background: var(--g50); }
+
+    /* Theme toggle */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--g50); border: 1px solid var(--border);
+      color: var(--ink2); cursor: pointer; transition: all .15s;
+    }
+    .theme-toggle:hover { background: var(--g100); color: var(--g700); border-color: var(--g400); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    [data-theme="dark"] .theme-toggle .sun-icon { display: block; }
+    [data-theme="dark"] .theme-toggle .moon-icon { display: none; }
+    .theme-toggle .sun-icon { display: none; }
+    .theme-toggle .moon-icon { display: block; }
 
     /* Lang pill toggle */
     .lang-pill {
@@ -690,6 +728,10 @@
         <button id="btn-zh" class="active" onclick="setLang('zh')">中文</button>
         <button id="btn-en" onclick="setLang('en')">EN</button>
       </div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
     </div>
   </div>
 </nav>
@@ -1339,7 +1381,22 @@
     document.body.dataset.lang = lang;
     document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
     document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    localStorage.setItem('lang', lang);
   }
+
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', targetTheme);
+    localStorage.setItem('theme', targetTheme);
+  }
+
+  // Init theme & lang
+  const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  const savedLang = localStorage.getItem('lang') || 'zh';
+  setLang(savedLang);
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
