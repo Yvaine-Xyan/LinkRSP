@@ -7,7 +7,7 @@
 .PHONY: help rule-lint rule-lint-all spec-check \
         fmt vet build test lint \
         audit-gen migrate-up migrate-down \
-        ci-local clean
+        ci-local clean analytics-build
 
 # ─── Default ──────────────────────────────────────────────────────
 help:
@@ -35,6 +35,9 @@ help:
 	@echo "  CI:"
 	@echo "    ci-local          Run full CI checks locally"
 	@echo "    clean             Remove build artifacts"
+	@echo ""
+	@echo "  Web Analytics:"
+	@echo "    analytics-build   Bundle Vercel Analytics script"
 	@echo ""
 
 # ─── Phase A: Rule & Spec Automation ──────────────────────────────
@@ -160,3 +163,10 @@ ifeq ($(GO_MODULE_EXISTS),yes)
 	@go clean ./...
 endif
 	@echo "✓ Clean"
+
+# ─── Web Analytics ────────────────────────────────────────────────
+analytics-build:
+	@echo "→ Bundling Vercel Analytics..."
+	@which npm >/dev/null 2>&1 || (echo "Install npm first" && exit 1)
+	@npm run analytics:bundle
+	@echo "✓ Analytics bundle created: analytics.bundle.js"

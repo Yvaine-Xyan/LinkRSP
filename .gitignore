@@ -5,3 +5,10 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Node modules and build artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

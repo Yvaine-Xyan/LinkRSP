@@ -1,0 +1,16 @@
+{
+  "name": "linkrsp",
+  "version": "1.0.0",
+  "description": "LinkRSP - Decentralized labor mutual-aid protocol",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build step needed for static site'",
+    "analytics:bundle": "npx esbuild analytics.js --bundle --outfile=analytics.bundle.js --format=iife --target=es2015"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2"
+  }
+}
