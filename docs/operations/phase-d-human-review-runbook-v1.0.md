@@ -114,7 +114,7 @@ curl -sS "$BASE_URL/api/v1/internal/semantic-audit-jobs/stats" \
 
 **不要**在左侧 **Actions** 里找——那里只有工作流运行记录。请按下面路径操作（需对本仓库有 **Settings** 权限，一般为 Owner / Admin）：
 
-1. 打开仓库首页：`https://github.com/Yvaine-Xyan/LinkRSP`
+1. 打开仓库首页：`https://github.com/YvaineHe/LinkRSP`
 2. 点顶部菜单 **Settings**（在 **Insights** 旁边；若看不到，说明当前账号无权改仓库设置）
 3. 左侧栏点开 **Secrets and variables**，再点 **Actions**
 4. 你会看到两个子页签：

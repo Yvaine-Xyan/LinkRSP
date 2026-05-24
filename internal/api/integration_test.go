@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/db"
+	"github.com/YvaineHe/linkrsp/internal/db"
 	"github.com/google/uuid"
 )
 

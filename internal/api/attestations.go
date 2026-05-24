@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
-	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r002"
-	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r009"
+	"github.com/YvaineHe/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/rules/r002"
+	"github.com/YvaineHe/linkrsp/internal/rules/r009"
 	"github.com/google/uuid"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
-	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r008"
+	"github.com/YvaineHe/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/rules/r008"
 )
 
 func TestCheck_BelowThreshold_Pass(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/Yvaine-Xyan/linkrsp
+module github.com/YvaineHe/linkrsp
 
 go 1.26.3
 

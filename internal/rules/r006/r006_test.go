@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
-	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r006"
+	"github.com/YvaineHe/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/rules/r006"
 )
 
 // ── Pure-logic tests (no DB required) ────────────────────────────────────────

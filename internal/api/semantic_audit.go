@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
-	"github.com/Yvaine-Xyan/linkrsp/internal/queue"
+	"github.com/YvaineHe/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/queue"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )

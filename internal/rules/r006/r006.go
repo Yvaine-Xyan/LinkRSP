@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/audit"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

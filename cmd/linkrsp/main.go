@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/api"
-	"github.com/Yvaine-Xyan/linkrsp/internal/config"
-	"github.com/Yvaine-Xyan/linkrsp/internal/db"
+	"github.com/YvaineHe/linkrsp/internal/api"
+	"github.com/YvaineHe/linkrsp/internal/config"
+	"github.com/YvaineHe/linkrsp/internal/db"
 )
 
 func main() {

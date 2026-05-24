@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Yvaine-Xyan/linkrsp/internal/audit"
-	"github.com/Yvaine-Xyan/linkrsp/internal/rules/r010"
+	"github.com/YvaineHe/linkrsp/internal/audit"
+	"github.com/YvaineHe/linkrsp/internal/rules/r010"
 )
 
 var genesisEnd = time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
